@@ -1,11 +1,12 @@
 # Student Portal
 
-A simple Django application for managing student records. Originally named `project1`, the project package has been renamed to `student_portal`.
+A web-based Student Portal built using Django (Python) for the backend and HTML/CSS/JavaScript for the frontend. The project was originally called `project1` but has been renamed to `student_portal`.
 
 ## Features
 
 - Register students with name, ID, branch, section, and optional photo
 - List all students
+- Search by ID or name
 - View individual student details
 - Update or delete student records
 - All operations are public (no authentication)
@@ -36,9 +37,9 @@ A simple Django application for managing student records. Originally named `proj
 
 ## Development notes
 
-- Project package is `student_portal` (not `project1`).
+- The Django project package is `student_portal` (not `project1`).
 - Media uploads are stored in the `media/` directory.
-- Default database is SQLite (`db.sqlite3`), which is ignored by git.
+- Database is SQLite (`db.sqlite3`), which is ignored by git.
 
 ## Ignored files
 
@@ -51,3 +52,4 @@ The following are excluded from version control:
 - `.vscode/`
 
 Feel free to extend functionality or add authentication as needed.
+
