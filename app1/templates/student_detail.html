@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #eef2f7;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+
+        .sidebar {
+            width: 230px;
+            background: linear-gradient(180deg, #2f3e64, #1e2a45);
+            color: white;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h2 {
+            margin-bottom: 35px;
+            font-size: 22px;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .sidebar a {
+            color: #e4e8f7;
+            text-decoration: none;
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            transition: 0.25s;
+            position: relative;
+        }
+
+        .sidebar a:hover {
+            background: #43548a;
+            padding-left: 18px;
+            color: white;
+        }
+
+        .sidebar a.active {
+            background: #5f9cff;
+            color: white;
+            font-weight: 500;
+        }
+
+        .sidebar a::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: #5f9cff;
+            border-radius: 0 4px 4px 0;
+            opacity: 0;
+            transition: 0.25s;
+        }
+
+        .sidebar a:hover::before {
+            opacity: 1;
+        }
+
+        .sidebar a.active::before {
+            opacity: 1;
+        }
+
+        /* Main */
+
+        .main {
+            flex: 1;
+            padding: 45px;
+        }
+
+        /* Profile Header */
+
+                .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            background: linear-gradient(135deg, #ffffff, #f8f9ff);
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            transition: 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* soft highlight effect */
+
+        .profile-header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(95, 156, 255, 0.15), transparent 60%);
+            opacity: 0;
+            transition: 0.4s;
+        }
+
+        .profile-header:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 35px rgba(0, 0, 0, 0.12);
+        }
+
+        .profile-header:hover::before {
+            opacity: 1;
+        }
+
+        .profile-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #5f9cff;
+        }
+
+        .profile-header h2 {
+            margin: 0;
+            color: #333;
+        }
+
+        .profile-header p {
+            margin-top: 5px;
+            color: #666;
+        }
+
+        /* Info Card */
+
+        .info-card {
+            margin-top: 35px;
+            background: white;
+            padding: 28px;
+            border-radius: 14px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+            max-width: 520px;
+        }
+
+        .info-card h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Info Rows */
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 15px;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        /* Buttons */
+
+        .actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .actions a {
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.25s;
+        }
+
+        .back {
+            background: #6c757d;
+        }
+
+        .back:hover {
+            background: #5a6268;
+        }
+
+        .update {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .update:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+
+        .delete {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .delete:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+
+        /* Popup */
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup-box {
+            background: white;
+            padding: 32px;
+            border-radius: 14px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .popup-buttons {
+            margin-top: 22px;
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .confirm-delete {
+            background: #dc2626;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .confirm-delete:hover {
+            background: #b91c1c;
+        }
+
+        .cancel-btn {
+            background: #e5e7eb;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .cancel-btn:hover {
+            background: #d1d5db;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+
+    <div class="sidebar">
+
+        <h2>Student Portal</h2>
+
+        <a href="{% url 'students_list' %}" class="active">👥 Students</a>
+
+        <a href="{% url 'registration' %}">➕ Register Student</a>
+
+
+    </div>
+
+    <!-- Main Content -->
+
+    <div class="main">
+
+        <div class="profile-header">
+
+            {% if student.student_image %}
+            <img src="{{ student.student_image.url }}" class="profile-img">
+            {% else %}
+            <p>No Image</p>
+            {% endif %}
+
+            <div>
+                <h2>{{ student.student_name }}</h2>
+                <p>ID: {{ student.student_id }}</p>
+            </div>
+
+        </div>
+
+
+        <div class="info-card">
+
+            <h3>Student Information</h3>
+
+            <div class="info-row">
+                <span class="label">Student ID</span>
+                <span>{{ student.student_id }}</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Name</span>
+                <span>{{ student.student_name }}</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Branch</span>
+                <span>{{ student.student_branch }}</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Section</span>
+                <span>{{ student.student_section }}</span>
+            </div>
+
+            <div class="actions">
+
+                <a href="{% url 'students_list' %}" class="back">Back</a>
+
+                <a href="{% url 'update_student' student.student_id %}" class="update">Update</a>
+
+                <a href="#" onclick="openDeletePopup('{{ student.student_id }}')" class="delete">Delete</a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Delete Popup -->
+
+    <div id="deletePopup" class="popup-overlay">
+
+        <div class="popup-box">
+
+            <h3>Delete Student</h3>
+
+            <p>Are you sure you want to delete this student?</p>
+
+            <div class="popup-buttons">
+
+                <a id="confirmDelete" class="confirm-delete">Delete</a>
+
+                <button onclick="closeDeletePopup()" class="cancel-btn">Cancel</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        function openDeletePopup(studentId) {
+
+            let popup = document.getElementById("deletePopup");
+            let deleteBtn = document.getElementById("confirmDelete");
+
+            deleteBtn.href = "/delete-student/" + studentId + "/";
+
+            popup.style.display = "flex";
+
+        }
+
+        function closeDeletePopup() {
+
+            document.getElementById("deletePopup").style.display = "none";
+
+        }
+
+    </script>
+
+</body>
+
+</html>

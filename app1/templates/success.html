@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Successful</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Card */
+
+        .container {
+            background: white;
+            padding: 45px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+            width: 380px;
+            transition: 0.3s;
+        }
+
+        .container:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+        }
+
+        /* Success Icon */
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #28a745;
+            color: white;
+            font-size: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        /* Text */
+
+        h1 {
+            margin: 10px 0;
+            color: #333;
+        }
+
+        p {
+            color: #666;
+            margin: 15px 0;
+            font-size: 15px;
+        }
+
+        /* Buttons */
+
+        .buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: white;
+            transition: 0.25s;
+        }
+
+        /* Button colors */
+
+        .register {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .register:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+
+        .view {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .view:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        /* Countdown */
+
+        .redirect {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #888;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="success-icon">✔</div>
+
+        <h1>Registration Successful</h1>
+
+        <p>The student has been registered successfully.</p>
+
+        <div class="redirect">
+            Redirecting to students list in <span id="count">3</span> seconds...
+        </div>
+
+        <div class="buttons">
+
+            <a href="{% url 'registration' %}" class="btn register">
+                Register Another Student
+            </a>
+
+            <a href="{% url 'students_list' %}" class="btn view">
+                View Students List
+            </a>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        let seconds = 3;
+        let counter = document.getElementById("count");
+
+        let timer = setInterval(function () {
+
+            seconds--;
+            counter.textContent = seconds;
+
+            if (seconds <= 0) {
+                clearInterval(timer);
+                window.location.href = "{% url 'students_list' %}";
+            }
+
+        }, 1000);
+
+    </script>
+
+</body>
+
+</html>
