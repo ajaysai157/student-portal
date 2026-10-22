@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Delete {{ department.name }} &middot; College Portal{% endblock %}
+{% block page_title %}Delete department{% endblock %}
+{% block eyebrow %}Administration{% endblock %}
+{% block nav_departments %}is-active{% endblock %}
+
+{% block content %}
+
+<section class="panel panel-danger">
+    <header class="panel-head">
+        <h2>Delete this department?</h2>
+    </header>
+
+    <p class="confirm-title">{{ department.name }} ({{ department.code }})</p>
+
+    {% if student_count or faculty_count %}
+    <p class="confirm-warning">
+        This department still has {{ student_count }} student{{ student_count|pluralize }}
+        and {{ faculty_count }} faculty member{{ faculty_count|pluralize }} attached.
+        Reassign them to another department first, or deactivate the department
+        instead of deleting it.
+    </p>
+    <div class="form-actions">
+        <a class="btn btn-ghost" href="{% url 'department_detail' department.pk %}">Back to department</a>
+    </div>
+    {% else %}
+    <p class="confirm-warning">
+        No student or faculty member is linked to this department, so it can be
+        removed safely. This cannot be undone.
+    </p>
+    <form method="POST" action="{% url 'department_delete' department.pk %}">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-danger">Yes, delete this department</button>
+            <a class="btn btn-ghost" href="{% url 'department_detail' department.pk %}">Cancel</a>
+        </div>
+    </form>
+    {% endif %}
+</section>
+
+{% endblock %}

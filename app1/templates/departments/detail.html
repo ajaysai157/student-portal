@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}{{ department.name }} &middot; College Portal{% endblock %}
+{% block page_title %}Department{% endblock %}
+{% block eyebrow %}{% if is_admin %}Administration{% else %}College directory{% endif %}{% endblock %}
+{% block nav_departments %}is-active{% endblock %}
+
+{% block content %}
+
+<div class="profile-hero department-hero">
+    <span class="department-code department-code-large">{{ department.code }}</span>
+    <div class="profile-hero-text">
+        <h2>{{ department.name }}</h2>
+        <p class="profile-hero-meta">
+            {{ department.office_location|default:"Office location not set" }}
+            {% if not department.is_active %}&middot; <span class="badge badge-muted">Inactive</span>{% endif %}
+        </p>
+        <div class="profile-hero-actions">
+            {% if is_admin %}
+            <a class="btn btn-primary btn-sm" href="{% url 'department_edit' department.pk %}">Edit department</a>
+            <a class="btn btn-danger-outline btn-sm" href="{% url 'department_delete_confirmation' department.pk %}">Delete</a>
+            {% elif can_edit %}
+            <a class="btn btn-primary btn-sm" href="{% url 'department_edit' department.pk %}">Edit details</a>
+            {% endif %}
+            <a class="btn btn-ghost btn-sm" href="{% url 'department_list' %}">All departments</a>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-columns">
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>About this department</h2>
+        </header>
+        <p class="department-description">
+            {{ department.description|default:"No description has been added yet." }}
+        </p>
+        <dl class="detail-list">
+            <div class="detail-row">
+                <dt>Code</dt>
+                <dd>{{ department.code }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Office location</dt>
+                <dd>{{ department.office_location|default:"Not provided" }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Contact email</dt>
+                <dd>
+                    {% if department.contact_email %}
+                    <a href="mailto:{{ department.contact_email }}">{{ department.contact_email }}</a>
+                    {% else %}Not provided{% endif %}
+                </dd>
+            </div>
+            <div class="detail-row">
+                <dt>Students enrolled</dt>
+                <dd>{{ department.students.count }}</dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>Faculty members</h2>
+        </header>
+        {% if faculty_members %}
+        <ul class="record-list">
+            {% for profile in faculty_members %}
+            <li>
+                <span class="record-text">
+                    <span class="record-title">{{ profile.display_name }}</span>
+                    <span class="record-meta">{{ profile.designation|default:"Faculty member" }} &middot;
+                        {{ profile.employee_id }}</span>
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-state">No faculty member is assigned to this department yet.</p>
+        {% endif %}
+    </section>
+
+</div>
+
+{% if change_logs %}
+<section class="panel">
+    <header class="panel-head">
+        <h2>Change history</h2>
+        <p class="panel-intro">Who changed this department and when.</p>
+    </header>
+    <ul class="record-list">
+        {% for log in change_logs %}
+        <li>
+            <span class="record-text">
+                <span class="record-title">{{ log.get_action_display }}</span>
+                <span class="record-meta">
+                    {{ log.changed_at|date:"j M Y, H:i" }} &middot;
+                    {% if log.changed_by %}{{ log.changed_by.get_username }}{% else %}system{% endif %}
+                    {% for field, values in log.changes.items %}
+                    &middot; {{ field }}: &ldquo;{{ values.from|default:"empty" }}&rdquo; &rarr;
+                    &ldquo;{{ values.to|default:"empty" }}&rdquo;
+                    {% endfor %}
+                </span>
+            </span>
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% endblock %}

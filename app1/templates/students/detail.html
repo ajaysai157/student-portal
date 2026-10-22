@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}{{ student.student_name }} &middot; College Portal{% endblock %}
+{% block page_title %}Student profile{% endblock %}
+{% block eyebrow %}{% if is_admin %}Administration{% else %}Faculty{% endif %}{% endblock %}
+{% block nav_students %}is-active{% endblock %}
+
+{% block content %}
+
+<div class="profile-hero">
+    {% include "partials/_avatar.html" %}
+    <div class="profile-hero-text">
+        <h2>{{ student.student_name }}</h2>
+        <p class="profile-hero-meta">{{ student.student_id }} &middot; {{ student.department.name }} &middot;
+            Section {{ student.student_section }}</p>
+        <div class="profile-hero-actions">
+            {% if is_admin %}
+            <a class="btn btn-primary btn-sm" href="{% url 'update_student' student.student_id %}">Edit record</a>
+            <a class="btn btn-danger-outline btn-sm" href="{% url 'student_delete_confirmation' student.student_id %}">Delete</a>
+            {% else %}
+            <span class="badge badge-muted">Read only &middot; student records are maintained by the administration</span>
+            {% endif %}
+            <a class="btn btn-ghost btn-sm" href="{% url 'student_directory' %}">Back to directory</a>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-columns">
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>Official details</h2>
+        </header>
+        <dl class="detail-list">
+            <div class="detail-row">
+                <dt>Student ID</dt>
+                <dd>{{ student.student_id }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Name</dt>
+                <dd>{{ student.student_name }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Department</dt>
+                <dd>
+                    <a href="{% url 'department_detail' student.department.pk %}">{{ student.department.code }} &ndash;
+                        {{ student.department.name }}</a>
+                </dd>
+            </div>
+            <div class="detail-row">
+                <dt>Section</dt>
+                <dd>Section {{ student.student_section }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Record created</dt>
+                <dd>{{ student.created_at|date:"j M Y" }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Last updated</dt>
+                <dd>{{ student.updated_at|date:"j M Y" }}</dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>Login account</h2>
+        </header>
+        {% if is_admin %}
+        {% if student.account %}
+        <dl class="detail-list">
+            <div class="detail-row">
+                <dt>Username</dt>
+                <dd>{{ student.account.username }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Status</dt>
+                <dd>
+                    {% if student.account.is_active %}
+                    <span class="badge badge-success">Active</span>
+                    {% else %}
+                    <span class="badge badge-muted">Deactivated</span>
+                    {% endif %}
+                </dd>
+            </div>
+        </dl>
+        <a class="btn btn-ghost btn-sm" href="{% url 'student_account_update' student.pk %}">Manage login</a>
+        {% else %}
+        <p class="empty-state">This student has no login account yet.</p>
+        <a class="btn btn-ghost btn-sm" href="{% url 'student_account_create' %}">Create a login</a>
+        {% endif %}
+        {% else %}
+        <p class="empty-state">
+            Login details are only visible to the administration.
+        </p>
+        {% endif %}
+    </section>
+
+</div>
+
+{% endblock %}

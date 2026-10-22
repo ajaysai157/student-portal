@@ -1,0 +1,70 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="College Management Portal - students, departments and faculty in one place.">
+    <title>{% block title %}College Management Portal{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'app1/css/app.css' %}">
+</head>
+
+<body class="{% block body_class %}app-body{% endblock %}">
+
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <div class="app-shell">
+
+        {% block sidebar %}
+        {% include "partials/_sidebar.html" %}
+        {% endblock %}
+
+        <div class="app-main">
+
+            <header class="topbar">
+                <button class="nav-toggle" type="button" aria-controls="sidebar" aria-expanded="false">
+                    <span class="nav-toggle-bar" aria-hidden="true"></span>
+                    <span class="visually-hidden">Toggle navigation</span>
+                </button>
+
+                <div class="topbar-title">
+                    <p class="topbar-eyebrow">{% block eyebrow %}College Portal{% endblock %}</p>
+                    <h1 class="topbar-heading">{% block heading %}{% block page_title %}{% endblock %}{% endblock %}</h1>
+                </div>
+
+                <div class="topbar-user">
+                    {% if user.is_authenticated %}
+                    <div class="user-chip">
+                        <span class="user-avatar" aria-hidden="true">{{ user.get_short_name|default:user.username|first|upper }}</span>
+                        <span class="user-meta">
+                            <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+                            <span class="user-role">{{ user.get_username }}</span>
+                        </span>
+                    </div>
+                    <form method="POST" action="{% url 'logout' %}" class="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-ghost btn-sm">Sign out</button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Sign in</a>
+                    {% endif %}
+                </div>
+            </header>
+
+            <main id="main-content" class="content">
+                {% include "partials/_messages.html" %}
+                {% block content %}{% endblock %}
+            </main>
+
+            <footer class="app-footer">
+                <p>College Management Portal &middot; Django project built from the original Student Portal.</p>
+            </footer>
+
+        </div>
+    </div>
+
+    <script src="{% static 'app1/js/app.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

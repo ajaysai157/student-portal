@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Correction requests &middot; College Portal{% endblock %}
+{% block page_title %}Correction requests{% endblock %}
+{% block eyebrow %}Administration{% endblock %}
+{% block nav_corrections %}is-active{% endblock %}
+
+{% block content %}
+
+<div class="section-head">
+    <p class="section-count">{{ requests|length }} request{{ requests|length|pluralize }}</p>
+</div>
+
+{% if requests %}
+
+<ul class="card-list">
+    {% for correction in requests %}
+    <li class="card-row">
+        <div class="card-row-text">
+            <p class="card-row-title">
+                <a href="{% url 'correction_request_review' correction.pk %}">
+                    {{ correction.student.student_name }} &ndash; {{ correction.get_field_name_display }}
+                </a>
+            </p>
+            <p class="card-row-meta">
+                {{ correction.current_value|default:"empty" }} &rarr; <strong>{{ correction.requested_value }}</strong>
+            </p>
+            <p class="card-row-meta">
+                Submitted {{ correction.created_at|date:"j M Y" }} by {{ correction.submitted_by.get_username }}
+            </p>
+        </div>
+        <div class="card-row-actions">
+            {% if correction.status == 'pending' %}
+            <span class="badge badge-warning">Pending</span>
+            {% elif correction.status == 'approved' %}
+            <span class="badge badge-success">Approved</span>
+            {% else %}
+            <span class="badge badge-muted">Rejected</span>
+            {% endif %}
+            <a class="btn btn-ghost btn-sm" href="{% url 'correction_request_review' correction.pk %}">Review</a>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+
+{% else %}
+
+<section class="panel">
+    <h2>No correction requests</h2>
+    <p class="empty-state">
+        When a student asks for a change to their record it shows up here for review.
+    </p>
+</section>
+
+{% endif %}
+
+{% endblock %}

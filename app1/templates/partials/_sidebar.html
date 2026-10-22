@@ -1,0 +1,71 @@
+{% comment %}
+Role based navigation.
+
+The menu only *hints* at what a user may do. Every link here points to a
+view that checks the permission again on the server, so removing a link is
+a convenience and never the security control.
+{% endcomment %}
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <span class="brand-mark" aria-hidden="true">CP</span>
+        <span class="brand-text">
+            <strong>College Portal</strong>
+            <small>Management System</small>
+        </span>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Main navigation">
+        <p class="nav-section">Overview</p>
+        <a class="nav-link {% block nav_dashboard %}{% endblock %}" href="{% url 'dashboard' %}">
+            <span class="nav-icon" aria-hidden="true">▦</span> Dashboard
+        </a>
+
+        {% if is_admin or is_faculty %}
+        <p class="nav-section">Records</p>
+        <a class="nav-link {% block nav_students %}{% endblock %}" href="{% url 'student_directory' %}">
+            <span class="nav-icon" aria-hidden="true">◎</span> Students
+        </a>
+        <a class="nav-link {% block nav_departments %}{% endblock %}" href="{% url 'department_list' %}">
+            <span class="nav-icon" aria-hidden="true">▤</span> Departments
+        </a>
+        {% endif %}
+
+        {% if is_admin %}
+        <p class="nav-section">Management</p>
+        <a class="nav-link {% block nav_faculty %}{% endblock %}" href="{% url 'faculty_list' %}">
+            <span class="nav-icon" aria-hidden="true">⚑</span> Faculty
+        </a>
+        <a class="nav-link {% block nav_accounts %}{% endblock %}" href="{% url 'student_accounts' %}">
+            <span class="nav-icon" aria-hidden="true">⚿</span> Student accounts
+        </a>
+        <a class="nav-link {% block nav_corrections %}{% endblock %}" href="{% url 'correction_request_list' %}">
+            <span class="nav-icon" aria-hidden="true">✎</span> Correction requests
+        </a>
+        {% endif %}
+
+        {% if is_student %}
+        <p class="nav-section">My portal</p>
+        <a class="nav-link {% block nav_profile %}{% endblock %}" href="{% url 'my_profile' %}">
+            <span class="nav-icon" aria-hidden="true">☺</span> My profile
+        </a>
+        <a class="nav-link {% block nav_my_corrections %}{% endblock %}" href="{% url 'my_correction_requests' %}">
+            <span class="nav-icon" aria-hidden="true">✎</span> My requests
+        </a>
+        <a class="nav-link" href="{% url 'my_department' %}">
+            <span class="nav-icon" aria-hidden="true">▤</span> My department
+        </a>
+        {% endif %}
+
+        <p class="nav-section">Account</p>
+        <a class="nav-link" href="{% url 'password_change' %}">
+            <span class="nav-icon" aria-hidden="true">⚿</span> Change password
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <p>Signed in as</p>
+        <p class="sidebar-role">
+            {% if is_admin %}Administrator{% elif is_faculty %}Faculty{% elif is_student %}Student{% else %}User{% endif %}
+        </p>
+    </div>
+</aside>

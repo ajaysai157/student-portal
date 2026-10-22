@@ -1,0 +1,49 @@
+{% comment %}
+Pagination control.
+
+``filter_querystring`` holds the active search / filter parameters, so
+they survive a page change.  The "clear" link drops every parameter.
+{% endcomment %}
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="pagination" aria-label="Pagination">
+    <p class="pagination-summary">
+        Showing {{ page_obj.start_index }}&ndash;{{ page_obj.end_index }}
+        of {{ page_obj.paginator.count }} student{{ page_obj.paginator.count|pluralize }}
+    </p>
+
+    <ul class="pagination-list">
+        {% if page_obj.has_previous %}
+        <li>
+            <a class="page-link" href="?{% if filter_querystring %}{{ filter_querystring }}&amp;{% endif %}page=1"
+                aria-label="First page">&laquo;</a>
+        </li>
+        <li>
+            <a class="page-link" href="?{% if filter_querystring %}{{ filter_querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}"
+                aria-label="Previous page">&lsaquo;</a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if num == page_obj.number %}
+        <li><span class="page-link is-current" aria-current="page">{{ num }}</span></li>
+        {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+        <li>
+            <a class="page-link"
+                href="?{% if filter_querystring %}{{ filter_querystring }}&amp;{% endif %}page={{ num }}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li>
+            <a class="page-link" href="?{% if filter_querystring %}{{ filter_querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}"
+                aria-label="Next page">&rsaquo;</a>
+        </li>
+        <li>
+            <a class="page-link" href="?{% if filter_querystring %}{{ filter_querystring }}&amp;{% endif %}page={{ page_obj.paginator.num_pages }}"
+                aria-label="Last page">&raquo;</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}

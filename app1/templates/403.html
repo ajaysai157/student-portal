@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Not allowed &middot; College Portal{% endblock %}
+{% block page_title %}Permission denied{% endblock %}
+{% block eyebrow %}Error 403{% endblock %}
+
+{% block content %}
+
+<section class="panel">
+    <div class="success-panel">
+        <span class="error-icon" aria-hidden="true">403</span>
+        <h2>You do not have access to this page</h2>
+        <p class="empty-state">
+            Your account does not have the permission required for this part of the
+            portal. If you believe this is wrong, please contact the administration.
+        </p>
+        <a class="btn btn-primary" href="{% url 'dashboard' %}">Back to dashboard</a>
+    </div>
+</section>
+
+{% endblock %}

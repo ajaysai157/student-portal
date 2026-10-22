@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}My department &middot; College Portal{% endblock %}
+{% block page_title %}My department{% endblock %}
+{% block eyebrow %}Student portal{% endblock %}
+
+{% block content %}
+
+<div class="profile-hero department-hero">
+    <span class="department-code department-code-large">{{ department.code }}</span>
+    <div class="profile-hero-text">
+        <h2>{{ department.name }}</h2>
+        <p class="profile-hero-meta">{{ department.office_location|default:"Office location not set" }}</p>
+    </div>
+</div>
+
+<div class="dashboard-columns">
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>About the department</h2>
+        </header>
+        <p class="department-description">
+            {{ department.description|default:"No description has been added yet." }}
+        </p>
+        <dl class="detail-list">
+            <div class="detail-row">
+                <dt>Code</dt>
+                <dd>{{ department.code }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Office location</dt>
+                <dd>{{ department.office_location|default:"Not provided" }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Contact email</dt>
+                <dd>
+                    {% if department.contact_email %}
+                    <a href="mailto:{{ department.contact_email }}">{{ department.contact_email }}</a>
+                    {% else %}Not provided{% endif %}
+                </dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>Faculty members</h2>
+        </header>
+        {% if department.faculty_members.exists %}
+        <ul class="record-list">
+            {% for profile in department.faculty_members.all %}
+            <li>
+                <span class="record-text">
+                    <span class="record-title">{{ profile.display_name }}</span>
+                    <span class="record-meta">{{ profile.designation|default:"Faculty member" }}</span>
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-state">No faculty member is listed for this department yet.</p>
+        {% endif %}
+    </section>
+
+</div>
+
+{% endblock %}

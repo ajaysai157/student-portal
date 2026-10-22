@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}My dashboard &middot; College Portal{% endblock %}
+{% block page_title %}Welcome, {{ user.get_short_name|default:user.get_username }}{% endblock %}
+{% block eyebrow %}Student portal{% endblock %}
+{% block nav_dashboard %}is-active{% endblock %}
+
+{% block content %}
+
+{% if student %}
+
+<div class="profile-hero">
+    {% include "partials/_avatar.html" %}
+    <div class="profile-hero-text">
+        <h2>{{ student.student_name }}</h2>
+        <p class="profile-hero-meta">{{ student.student_id }} &middot; {{ student.department.name }} &middot;
+            Section {{ student.student_section }}</p>
+        <a class="btn btn-primary btn-sm" href="{% url 'my_profile' %}">Open my full profile</a>
+    </div>
+</div>
+
+<div class="dashboard-columns">
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>My details</h2>
+        </header>
+        <dl class="detail-list">
+            <div class="detail-row">
+                <dt>Student ID</dt>
+                <dd>{{ student.student_id }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Name</dt>
+                <dd>{{ student.student_name }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Department</dt>
+                <dd>{{ student.department.code }} &ndash; {{ student.department.name }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Section</dt>
+                <dd>Section {{ student.student_section }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Account</dt>
+                <dd>{{ user.get_username }}</dd>
+            </div>
+        </dl>
+        <p class="panel-footnote">
+            These details are maintained by the college administration. If something is
+            wrong, send a correction request instead of editing them here.
+        </p>
+    </section>
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>My department</h2>
+            <a class="panel-link" href="{% url 'my_department' %}">Department page</a>
+        </header>
+        {% if department %}
+        <p class="department-summary">{{ department.description|default:"No description has been added yet." }}</p>
+        <dl class="detail-list">
+            <div class="detail-row">
+                <dt>Code</dt>
+                <dd>{{ department.code }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Office</dt>
+                <dd>{{ department.office_location|default:"Not provided" }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Contact</dt>
+                <dd>
+                    {% if department.contact_email %}
+                    <a href="mailto:{{ department.contact_email }}">{{ department.contact_email }}</a>
+                    {% else %}Not provided{% endif %}
+                </dd>
+            </div>
+        </dl>
+        {% else %}
+        <p class="empty-state">No department is linked to your record yet.</p>
+        {% endif %}
+    </section>
+
+</div>
+
+{% if pending_corrections %}
+<p class="panel-callout">
+    You have <strong>{{ pending_corrections }}</strong> correction request{{ pending_corrections|pluralize }}
+    waiting for a decision.
+    <a href="{% url 'my_correction_requests' %}">View my requests</a>
+</p>
+{% endif %}
+
+{% else %}
+
+<section class="panel">
+    <h2>Your profile is not linked yet</h2>
+    <p class="empty-state">
+        Your login works, but it is not linked to a student record yet. Please contact
+        the college administration so they can connect your account.
+    </p>
+</section>
+
+{% endif %}
+
+{% endblock %}

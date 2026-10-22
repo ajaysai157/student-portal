@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Student directory &middot; College Portal{% endblock %}
+{% block page_title %}Student directory{% endblock %}
+{% block eyebrow %}{% if is_admin %}Administration{% else %}Faculty{% endif %}{% endblock %}
+{% block nav_students %}is-active{% endblock %}
+
+{% block content %}
+
+{% include "partials/_filters.html" %}
+
+<div class="section-head">
+    <p class="section-count">
+        {{ total_results }} student{{ total_results|pluralize }} found
+        {% if current_q %}for &ldquo;{{ current_q }}&rdquo;{% endif %}
+    </p>
+    {% if is_admin %}
+    <a class="btn btn-primary" href="{% url 'register_student' %}">+ Register student</a>
+    {% endif %}
+</div>
+
+{% if page_obj.object_list %}
+
+<ul class="student-grid">
+    {% for student in page_obj %}
+    <li class="student-card">
+        <a class="student-card-link" href="{% url 'student_detail' student.student_id %}">
+            {% include "partials/_avatar.html" %}
+            <span class="student-card-text">
+                <span class="student-card-name">{{ student.student_name }}</span>
+                <span class="student-card-id">{{ student.student_id }}</span>
+                <span class="student-card-meta">{{ student.department.code }} &middot; Section {{ student.student_section }}</span>
+            </span>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+
+{% include "partials/_pagination.html" %}
+
+{% else %}
+
+<section class="panel">
+    <h2>No students match your search</h2>
+    <p class="empty-state">
+        {% if current_q or current_department or current_section %}
+        Try a different search term or clear the filters to see every student.
+        {% else %}
+        No students have been registered yet.
+        {% endif %}
+    </p>
+    {% if current_q or current_department or current_section %}
+    <a class="btn btn-ghost" href="{% url 'student_directory' %}">Clear filters</a>
+    {% endif %}
+</section>
+
+{% endif %}
+
+{% endblock %}

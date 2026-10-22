@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{% if mode == 'create' %}New student login{% else %}Manage login{% endif %} &middot; College Portal{% endblock %}
+{% block page_title %}{% if mode == 'create' %}Create a student login{% else %}Manage the login of {{ student.student_name }}{% endif %}{% endblock %}
+{% block eyebrow %}Administration{% endblock %}
+{% block nav_accounts %}is-active{% endblock %}
+
+{% block content %}
+
+<section class="panel panel-form">
+    <header class="panel-head">
+        <h2>{% if mode == 'create' %}Login details{% else %}Account details{% endif %}</h2>
+        <p class="panel-intro">
+            The new account gets the <strong>Student</strong> role and can only see the
+            student record it is linked to.
+        </p>
+    </header>
+
+    <form method="POST" novalidate>
+        {% csrf_token %}
+        {% include "partials/_form.html" %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {% if mode == 'create' %}Create login{% else %}Save changes{% endif %}
+            </button>
+            <a class="btn btn-ghost" href="{% url 'student_accounts' %}">Cancel</a>
+        </div>
+    </form>
+
+    {% if mode == 'edit' %}
+    <form method="POST" action="{% url 'student_account_unlink' student.pk %}" class="unlink-form">
+        {% csrf_token %}
+        <p class="panel-footnote">
+            Unlinking removes the login from this student record but keeps the record
+            itself.
+        </p>
+        <button type="submit" class="btn btn-danger-outline btn-sm">Unlink this login</button>
+    </form>
+    {% endif %}
+</section>
+
+{% endblock %}

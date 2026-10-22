@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Delete {{ student.student_name }} &middot; College Portal{% endblock %}
+{% block page_title %}Delete student record{% endblock %}
+{% block eyebrow %}Administration{% endblock %}
+{% block nav_students %}is-active{% endblock %}
+
+{% block content %}
+
+<section class="panel panel-danger">
+    <header class="panel-head">
+        <h2>Delete this student record?</h2>
+    </header>
+
+    <div class="confirm-body">
+        {% include "partials/_avatar.html" %}
+        <div>
+            <p class="confirm-title">{{ student.student_name }}</p>
+            <p class="confirm-meta">{{ student.student_id }} &middot; {{ student.department.name }} &middot;
+                Section {{ student.student_section }}</p>
+        </div>
+    </div>
+
+    <p class="confirm-warning">
+        This removes the student record and the uploaded photo permanently.
+        There is no undo, so please check the details above first.
+    </p>
+
+    <form method="POST" action="{% url 'delete_student' student.student_id %}">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-danger">Yes, delete this student</button>
+            <a class="btn btn-ghost" href="{% url 'student_detail' student.student_id %}">Cancel</a>
+        </div>
+    </form>
+</section>
+
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}{% if mode == 'create' %}New department{% else %}Edit {{ department.name }}{% endif %} &middot; College Portal{% endblock %}
+{% block page_title %}{% if mode == 'create' %}Create a department{% else %}Edit department{% endif %}{% endblock %}
+{% block eyebrow %}{% if is_admin %}Administration{% else %}Faculty{% endif %}{% endblock %}
+{% block nav_departments %}is-active{% endblock %}
+
+{% block content %}
+
+<section class="panel panel-form">
+    <header class="panel-head">
+        <h2>
+            {% if mode == 'create' %}Department details{% else %}Edit {{ department.name }}{% endif %}
+        </h2>
+        <p class="panel-intro">
+            {% if is_admin %}
+            Fields marked with <span class="required">*</span> are required.
+            Changes are recorded in the department history.
+            {% else %}
+            You can update the description, the office location and the contact email
+            of your department. The department code and its faculty assignments are
+            managed by the administration.
+            {% endif %}
+        </p>
+    </header>
+
+    <form method="POST" novalidate>
+        {% csrf_token %}
+        {% include "partials/_form.html" %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {% if mode == 'create' %}Create department{% else %}Save changes{% endif %}
+            </button>
+            <a class="btn btn-ghost" href="{% if mode == 'edit' and department %}{% url 'department_detail' department.pk %}{% else %}{% url 'department_list' %}{% endif %}">Cancel</a>
+        </div>
+    </form>
+</section>
+
+{% endblock %}

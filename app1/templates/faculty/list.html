@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty &middot; College Portal{% endblock %}
+{% block page_title %}Faculty members{% endblock %}
+{% block eyebrow %}Administration{% endblock %}
+{% block nav_faculty %}is-active{% endblock %}
+
+{% block content %}
+
+<div class="section-head">
+    <p class="section-count">{{ faculty_members|length }} faculty member{{ faculty_members|length|pluralize }}</p>
+    <a class="btn btn-primary" href="{% url 'faculty_create' %}">+ Add faculty</a>
+</div>
+
+{% if faculty_members %}
+
+<ul class="card-list">
+    {% for profile in faculty_members %}
+    <li class="card-row">
+        <span class="avatar avatar-placeholder" role="img" aria-hidden="true">{{ profile.display_name|slice:":1"|upper }}</span>
+        <div class="card-row-text">
+            <p class="card-row-title">
+                <a href="{% url 'faculty_detail' profile.pk %}">{{ profile.display_name }}</a>
+            </p>
+            <p class="card-row-meta">
+                {{ profile.user.get_username }} &middot; {{ profile.employee_id }}
+                {% if profile.designation %}&middot; {{ profile.designation }}{% endif %}
+            </p>
+            <p class="card-row-meta">
+                {% for department in profile.departments.all %}
+                <span class="tag">{{ department.code }}</span>
+                {% empty %}
+                <span class="tag tag-muted">No department</span>
+                {% endfor %}
+            </p>
+        </div>
+        <div class="card-row-actions">
+            {% if profile.user.is_active %}
+            <span class="badge badge-success">Active</span>
+            {% else %}
+            <span class="badge badge-muted">Deactivated</span>
+            {% endif %}
+            <a class="btn btn-ghost btn-sm" href="{% url 'faculty_update' profile.pk %}">Edit</a>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+
+{% else %}
+
+<section class="panel">
+    <h2>No faculty accounts yet</h2>
+    <p class="empty-state">
+        Faculty accounts are created here and can then be assigned to one or more
+        departments.
+    </p>
+    <a class="btn btn-primary" href="{% url 'faculty_create' %}">Add a faculty member</a>
+</section>
+
+{% endif %}
+
+{% endblock %}

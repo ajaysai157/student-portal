@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Review request &middot; College Portal{% endblock %}
+{% block page_title %}Review correction request{% endblock %}
+{% block eyebrow %}Administration{% endblock %}
+{% block nav_corrections %}is-active{% endblock %}
+
+{% block content %}
+
+<section class="panel panel-form">
+    <header class="panel-head">
+        <h2>{{ correction.student.student_name }} &ndash; {{ correction.get_field_name_display }}</h2>
+        <p class="panel-intro">
+            Submitted {{ correction.created_at|date:"j M Y, H:i" }} by
+            {{ correction.submitted_by.get_username }}.
+        </p>
+    </header>
+
+    <dl class="detail-list">
+        <div class="detail-row">
+            <dt>Student</dt>
+            <dd>{{ correction.student.student_name }} ({{ correction.student.student_id }})</dd>
+        </div>
+        <div class="detail-row">
+            <dt>Field</dt>
+            <dd>{{ correction.get_field_name_display }}</dd>
+        </div>
+        <div class="detail-row">
+            <dt>Current value</dt>
+            <dd>{{ correction.current_value|default:"empty" }}</dd>
+        </div>
+        <div class="detail-row">
+            <dt>Requested value</dt>
+            <dd><strong>{{ correction.requested_value }}</strong></dd>
+        </div>
+        <div class="detail-row">
+            <dt>Reason given</dt>
+            <dd>{{ correction.reason|default:"No reason was given." }}</dd>
+        </div>
+    </dl>
+
+    <form method="POST" novalidate>
+        {% csrf_token %}
+
+        <div class="form-field">
+            <label for="id_admin_note">Note (optional)</label>
+            <textarea name="admin_note" id="id_admin_note" rows="3" class="form-input">{{ correction.admin_note }}</textarea>
+        </div>
+
+        <div class="form-field form-field-check">
+            <label for="id_apply_change">
+                <input type="checkbox" name="apply_change" id="id_apply_change">
+                Apply the new value to the student record
+            </label>
+            <p class="help-text">
+                Leave unticked to approve the request without changing the official record.
+            </p>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" name="decision" value="approved" class="btn btn-primary">Approve</button>
+            <button type="submit" name="decision" value="rejected" class="btn btn-danger-outline">Reject</button>
+            <a class="btn btn-ghost" href="{% url 'correction_request_list' %}">Cancel</a>
+        </div>
+    </form>
+</section>
+
+{% endblock %}

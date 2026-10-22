@@ -1,0 +1,13 @@
+{% if messages %}
+<div class="messages" role="status" aria-live="polite">
+    {% for message in messages %}
+    <div class="message message-{{ message.tags|default:'info' }}">
+        <span class="message-icon" aria-hidden="true">
+            {% if message.tags == 'success' %}✓{% elif message.tags == 'error' %}!{% elif message.tags == 'warning' %}▲{% else %}i{% endif %}
+        </span>
+        <p>{{ message }}</p>
+        <button type="button" class="message-close" aria-label="Dismiss message">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

@@ -1,0 +1,8 @@
+{% comment %}Photo or the placeholder used when a student has no image.{% endcomment %}
+{% if student.photo_url %}
+<img class="avatar" src="{{ student.photo_url }}" alt="Photo of {{ student.student_name }}" loading="lazy">
+{% else %}
+<span class="avatar avatar-placeholder" role="img" aria-label="No photo available for {{ student.student_name }}">
+    {{ student.student_name|slice:":1"|upper }}
+</span>
+{% endif %}

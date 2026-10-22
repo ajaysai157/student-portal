@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}My profile &middot; College Portal{% endblock %}
+{% block page_title %}My profile{% endblock %}
+{% block eyebrow %}Student portal{% endblock %}
+{% block nav_profile %}is-active{% endblock %}
+
+{% block content %}
+
+<div class="profile-hero">
+    {% include "partials/_avatar.html" %}
+    <div class="profile-hero-text">
+        <h2>{{ student.student_name }}</h2>
+        <p class="profile-hero-meta">{{ student.student_id }} &middot; {{ student.department.name }} &middot;
+            Section {{ student.student_section }}</p>
+    </div>
+</div>
+
+<div class="dashboard-columns">
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>My details</h2>
+        </header>
+        <dl class="detail-list">
+            <div class="detail-row">
+                <dt>Student ID</dt>
+                <dd>{{ student.student_id }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Name</dt>
+                <dd>{{ student.student_name }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Department</dt>
+                <dd>
+                    <a href="{% url 'my_department' %}">{{ student.department.code }} &ndash; {{ student.department.name }}</a>
+                </dd>
+            </div>
+            <div class="detail-row">
+                <dt>Section</dt>
+                <dd>Section {{ student.student_section }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Login</dt>
+                <dd>{{ user.get_username }}</dd>
+            </div>
+        </dl>
+        <p class="panel-footnote">
+            The administration keeps these details up to date. You cannot change them
+            here, but you can send a correction request.
+        </p>
+        <a class="btn btn-ghost btn-sm" href="{% url 'my_correction_requests' %}">Request a correction</a>
+    </section>
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>Recent requests</h2>
+        </header>
+        {% if corrections %}
+        <ul class="record-list">
+            {% for correction in corrections %}
+            <li>
+                <span class="record-text">
+                    <span class="record-title">{{ correction.get_field_name_display }}</span>
+                    <span class="record-meta">
+                        {{ correction.current_value|default:"empty" }} &rarr; {{ correction.requested_value }}
+                        &middot; {{ correction.get_status_display }}
+                    </span>
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-state">You have not sent any correction request yet.</p>
+        {% endif %}
+    </section>
+
+</div>
+
+{% endblock %}

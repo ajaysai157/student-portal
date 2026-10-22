@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Profile not linked &middot; College Portal{% endblock %}
+{% block page_title %}Profile not linked{% endblock %}
+{% block eyebrow %}Student portal{% endblock %}
+
+{% block content %}
+
+<section class="panel">
+    <header class="panel-head">
+        <h2>Your account is not linked to a student record</h2>
+    </header>
+    <p class="empty-state">
+        You are signed in as <strong>{{ user.get_username }}</strong>, but this login is
+        not connected to a student record yet. Please contact the college
+        administration - they can link the account from the
+        &ldquo;Student accounts&rdquo; page.
+    </p>
+    <a class="btn btn-ghost" href="{% url 'dashboard' %}">Back to dashboard</a>
+</section>
+
+{% endblock %}

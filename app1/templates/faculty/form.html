@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}{% if mode == 'create' %}Add faculty{% else %}Edit {{ profile.user.get_username }}{% endif %} &middot; College Portal{% endblock %}
+{% block page_title %}{% if mode == 'create' %}Add a faculty member{% else %}Edit faculty account{% endif %}{% endblock %}
+{% block eyebrow %}Administration{% endblock %}
+{% block nav_faculty %}is-active{% endblock %}
+
+{% block content %}
+
+<section class="panel panel-form">
+    <header class="panel-head">
+        <h2>{% if mode == 'create' %}Faculty account{% else %}Account details{% endif %}</h2>
+        <p class="panel-intro">
+            The account is created with the <strong>Faculty</strong> role. Only an
+            administrator can change a role.
+        </p>
+    </header>
+
+    <form method="POST" novalidate>
+        {% csrf_token %}
+        {% include "partials/_form.html" %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {% if mode == 'create' %}Create faculty account{% else %}Save changes{% endif %}
+            </button>
+            <a class="btn btn-ghost" href="{% url 'faculty_list' %}">Cancel</a>
+        </div>
+    </form>
+</section>
+
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile.display_name }} &middot; College Portal{% endblock %}
+{% block page_title %}Faculty profile{% endblock %}
+{% block eyebrow %}Administration{% endblock %}
+{% block nav_faculty %}is-active{% endblock %}
+
+{% block content %}
+
+<div class="profile-hero">
+    <span class="avatar avatar-placeholder avatar-large" role="img" aria-hidden="true">{{ profile.display_name|slice:":1"|upper }}</span>
+    <div class="profile-hero-text">
+        <h2>{{ profile.display_name }}</h2>
+        <p class="profile-hero-meta">
+            {{ profile.designation|default:"Faculty member" }} &middot; {{ profile.employee_id }}
+        </p>
+        <div class="profile-hero-actions">
+            <a class="btn btn-primary btn-sm" href="{% url 'faculty_update' profile.pk %}">Edit account</a>
+            {% if profile.user.is_active %}
+            <form method="POST" action="{% url 'faculty_toggle_active' profile.pk %}" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger-outline btn-sm">Deactivate account</button>
+            </form>
+            {% else %}
+            <form method="POST" action="{% url 'faculty_toggle_active' profile.pk %}" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-sm">Activate account</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-columns">
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>Account</h2>
+        </header>
+        <dl class="detail-list">
+            <div class="detail-row">
+                <dt>Username</dt>
+                <dd>{{ profile.user.get_username }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Email</dt>
+                <dd>{{ profile.user.email|default:"Not provided" }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Phone</dt>
+                <dd>{{ profile.phone|default:"Not provided" }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Employee ID</dt>
+                <dd>{{ profile.employee_id }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Status</dt>
+                <dd>
+                    {% if profile.user.is_active %}
+                    <span class="badge badge-success">Active</span>
+                    {% else %}
+                    <span class="badge badge-muted">Deactivated &ndash; cannot sign in</span>
+                    {% endif %}
+                </dd>
+            </div>
+            <div class="detail-row">
+                <dt>Role</dt>
+                <dd>
+                    {% for group in group_names %}
+                    <span class="badge badge-info">{{ group }}</span>
+                    {% empty %}
+                    <span class="badge badge-muted">No portal role</span>
+                    {% endfor %}
+                </dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>Department assignments</h2>
+        </header>
+        {% if profile.departments.exists %}
+        <ul class="record-list">
+            {% for department in profile.departments.all %}
+            <li>
+                <a href="{% url 'department_detail' department.pk %}">
+                    <span class="record-text">
+                        <span class="record-title">{{ department.name }}</span>
+                        <span class="record-meta">{{ department.code }}</span>
+                    </span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="panel-footnote">
+            These are the departments this faculty member is allowed to edit.
+        </p>
+        {% else %}
+        <p class="empty-state">No department is assigned yet.</p>
+        {% endif %}
+
+        <form method="POST" action="{% url 'faculty_change_role' profile.pk %}" class="role-form">
+            {% csrf_token %}
+            <label for="role-select">Change portal role</label>
+            <div class="role-form-row">
+                <select id="role-select" name="role" class="form-input form-select">
+                    <option value="Faculty" {% if not is_admin_role %}selected{% endif %}>Faculty</option>
+                    <option value="Admin" {% if is_admin_role %}selected{% endif %}>Admin</option>
+                </select>
+                <button type="submit" class="btn btn-ghost btn-sm">Update role</button>
+            </div>
+            <p class="help-text">
+                The role decides what the account can do. It is never taken from a
+                hidden form field.
+            </p>
+        </form>
+    </section>
+
+</div>
+
+{% endblock %}

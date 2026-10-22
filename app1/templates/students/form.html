@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}{% if mode == 'create' %}Register student{% else %}Update student{% endif %} &middot; College Portal{% endblock %}
+{% block page_title %}{% if mode == 'create' %}Register a student{% else %}Update {{ student.student_name }}{% endif %}{% endblock %}
+{% block eyebrow %}Administration{% endblock %}
+{% block nav_students %}is-active{% endblock %}
+
+{% block content %}
+
+<section class="panel panel-form">
+    <header class="panel-head">
+        <h2>{% if mode == 'create' %}Student details{% else %}Edit student record{% endif %}</h2>
+        <p class="panel-intro">
+            Fields marked with <span class="required">*</span> are required.
+        </p>
+    </header>
+
+    <form method="POST" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% include "partials/_form.html" %}
+
+        {% if mode == 'edit' and student.photo_url %}
+        <div class="current-photo">
+            <p class="field-label">Current photo</p>
+            <img src="{{ student.photo_url }}" alt="Current photo of {{ student.student_name }}">
+        </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {% if mode == 'create' %}Register student{% else %}Save changes{% endif %}
+            </button>
+            <a class="btn btn-ghost" href="{% url 'student_directory' %}">Cancel</a>
+        </div>
+    </form>
+</section>
+
+{% endblock %}

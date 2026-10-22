@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty dashboard &middot; College Portal{% endblock %}
+{% block page_title %}Faculty dashboard{% endblock %}
+{% block eyebrow %}College overview{% endblock %}
+{% block nav_dashboard %}is-active{% endblock %}
+
+{% block content %}
+
+<section class="stat-grid" aria-label="College totals">
+    <article class="stat-card stat-card-accent">
+        <p class="stat-label">Students across the college</p>
+        <p class="stat-value">{{ total_students }}</p>
+        <a class="stat-link" href="{% url 'student_directory' %}">Browse directory</a>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">Departments</p>
+        <p class="stat-value">{{ total_departments }}</p>
+        <a class="stat-link" href="{% url 'department_list' %}">View departments</a>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">Students in my departments</p>
+        <p class="stat-value">{{ my_student_count }}</p>
+        <p class="stat-hint">across {{ my_departments|length }} assigned department{{ my_departments|length|pluralize }}</p>
+    </article>
+
+    <article class="stat-card">
+        <p class="stat-label">Sections</p>
+        <p class="stat-value">{{ students_by_section|length }}</p>
+        <p class="stat-hint">with students in them</p>
+    </article>
+</section>
+
+<div class="dashboard-columns">
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>Students by department</h2>
+            <a class="panel-link" href="{% url 'student_directory' %}">Open directory</a>
+        </header>
+
+        {% if students_by_department %}
+        <ul class="bar-list">
+            {% for department in students_by_department %}
+            <li class="bar-row">
+                <div class="bar-label">
+                    <span>{{ department.name }}</span>
+                    <span class="bar-count">{{ department.students_count }}</span>
+                </div>
+                {% if total_students %}
+                <span class="bar-track">
+                    <span class="bar-fill" style="width: {% widthratio department.students_count total_students 100 %}%"></span>
+                </span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-state">No departments yet.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>Students by section</h2>
+        </header>
+
+        {% if students_by_section %}
+        <ul class="bar-list">
+            {% for row in students_by_section %}
+            <li class="bar-row">
+                <div class="bar-label">
+                    <span>Section {{ row.student_section }}</span>
+                    <span class="bar-count">{{ row.count }}</span>
+                </div>
+                {% if total_students %}
+                <span class="bar-track">
+                    <span class="bar-fill bar-fill-alt" style="width: {% widthratio row.count total_students 100 %}%"></span>
+                </span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-state">No students have been registered yet.</p>
+        {% endif %}
+    </section>
+
+</div>
+
+<div class="dashboard-columns">
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>Recently added students</h2>
+            <a class="panel-link" href="{% url 'student_directory' %}">View all</a>
+        </header>
+
+        {% if recent_students %}
+        <ul class="record-list">
+            {% for student in recent_students %}
+            <li>
+                <a href="{% url 'student_detail' student.student_id %}">
+                    {% include "partials/_avatar.html" %}
+                    <span class="record-text">
+                        <span class="record-title">{{ student.student_name }}</span>
+                        <span class="record-meta">{{ student.student_id }} &middot; {{ student.department.code }} &middot;
+                            Section {{ student.student_section }}</span>
+                    </span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-state">Nothing here yet.</p>
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>My departments</h2>
+            <a class="panel-link" href="{% url 'department_list' %}">All departments</a>
+        </header>
+
+        {% if my_departments %}
+        <ul class="record-list">
+            {% for department in my_departments %}
+            <li>
+                <a href="{% url 'department_edit' department.pk %}">
+                    <span class="record-text">
+                        <span class="record-title">{{ department.name }}</span>
+                        <span class="record-meta">{{ department.code }} &middot; {{ department.office_location|default:"Office not set" }}</span>
+                    </span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="panel-footnote">
+            You can edit the description, office location and contact email of the
+            departments listed above.
+        </p>
+        {% else %}
+        <p class="empty-state">
+            You are not assigned to a department yet. Ask an administrator to add
+            you to one.
+        </p>
+        {% endif %}
+    </section>
+
+</div>
+
+{% endblock %}

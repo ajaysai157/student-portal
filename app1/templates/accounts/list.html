@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Student accounts &middot; College Portal{% endblock %}
+{% block page_title %}Student login accounts{% endblock %}
+{% block eyebrow %}Administration{% endblock %}
+{% block nav_accounts %}is-active{% endblock %}
+
+{% block content %}
+
+<div class="section-head">
+    <p class="section-count">{{ students|length }} student record{{ students|length|pluralize }}</p>
+    <a class="btn btn-primary" href="{% url 'student_account_create' %}">+ Create login</a>
+</div>
+
+{% if students %}
+
+<ul class="card-list">
+    {% for student in students %}
+    <li class="card-row">
+        {% include "partials/_avatar.html" %}
+        <div class="card-row-text">
+            <p class="card-row-title">{{ student.student_name }}</p>
+            <p class="card-row-meta">
+                {{ student.student_id }} &middot; {{ student.department.code }} &middot;
+                Section {{ student.student_section }}
+            </p>
+            <p class="card-row-meta">
+                {% if student.account %}
+                Login: <strong>{{ student.account.username }}</strong>
+                {% else %}
+                <span class="tag tag-muted">No login yet</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="card-row-actions">
+            {% if student.account %}
+            {% if student.account.is_active %}
+            <span class="badge badge-success">Active</span>
+            {% else %}
+            <span class="badge badge-muted">Deactivated</span>
+            {% endif %}
+            <a class="btn btn-ghost btn-sm" href="{% url 'student_account_update' student.pk %}">Manage</a>
+            {% else %}
+            <a class="btn btn-ghost btn-sm" href="{% url 'student_account_create' %}">Create login</a>
+            {% endif %}
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+
+{% else %}
+
+<section class="panel">
+    <h2>No student records yet</h2>
+    <p class="empty-state">Register a student first, then create the login account for them.</p>
+    <a class="btn btn-primary" href="{% url 'register_student' %}">Register a student</a>
+</section>
+
+{% endif %}
+
+{% endblock %}

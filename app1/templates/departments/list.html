@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Departments &middot; College Portal{% endblock %}
+{% block page_title %}Departments{% endblock %}
+{% block eyebrow %}{% if is_admin %}Administration{% else %}College directory{% endif %}{% endblock %}
+{% block nav_departments %}is-active{% endblock %}
+
+{% block content %}
+
+<div class="section-head">
+    <p class="section-count">{{ departments|length }} department{{ departments|length|pluralize }} &middot;
+        {{ total_students }} student{{ total_students|pluralize }} in total</p>
+    {% if is_admin %}
+    <a class="btn btn-primary" href="{% url 'department_create' %}">+ New department</a>
+    {% endif %}
+</div>
+
+{% if departments %}
+
+<ul class="department-grid">
+    {% for department in departments %}
+    <li class="department-card{% if not department.is_active %} is-inactive{% endif %}">
+        <div class="department-card-head">
+            <span class="department-code">{{ department.code }}</span>
+            {% if not department.is_active %}
+            <span class="badge badge-muted">Inactive</span>
+            {% endif %}
+        </div>
+
+        <h2 class="department-name">
+            <a href="{% url 'department_detail' department.pk %}">{{ department.name }}</a>
+        </h2>
+
+        <p class="department-description">
+            {{ department.description|default:"No description has been added yet."|truncatewords:22 }}
+        </p>
+
+        <dl class="department-meta">
+            <div>
+                <dt>Office</dt>
+                <dd>{{ department.office_location|default:"Not provided" }}</dd>
+            </div>
+            <div>
+                <dt>Students</dt>
+                <dd>{{ department.students.count }}</dd>
+            </div>
+            <div>
+                <dt>Faculty</dt>
+                <dd>{{ department.faculty_members.count }}</dd>
+            </div>
+        </dl>
+
+        <div class="department-card-actions">
+            <a class="btn btn-ghost btn-sm" href="{% url 'department_detail' department.pk %}">View</a>
+            {% if is_admin %}
+            <a class="btn btn-ghost btn-sm" href="{% url 'department_edit' department.pk %}">Edit</a>
+            {% elif is_faculty %}
+            {% if department in my_departments %}
+            <a class="btn btn-ghost btn-sm" href="{% url 'department_edit' department.pk %}">Edit details</a>
+            {% endif %}
+            {% endif %}
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+
+{% else %}
+
+<section class="panel">
+    <h2>No departments yet</h2>
+    <p class="empty-state">
+        {% if is_admin %}
+        Departments group the students and give the faculty something to be assigned to.
+        Create the first one to get started.
+        {% else %}
+        The administration has not set up any departments yet.
+        {% endif %}
+    </p>
+    {% if is_admin %}
+    <a class="btn btn-primary" href="{% url 'department_create' %}">Create a department</a>
+    {% endif %}
+</section>
+
+{% endif %}
+
+{% endblock %}

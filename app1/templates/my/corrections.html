@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}My correction requests &middot; College Portal{% endblock %}
+{% block page_title %}My correction requests{% endblock %}
+{% block eyebrow %}Student portal{% endblock %}
+{% block nav_my_corrections %}is-active{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-columns">
+
+    <section class="panel panel-form">
+        <header class="panel-head">
+            <h2>Request a correction</h2>
+            <p class="panel-intro">
+                Sending a request does <strong>not</strong> change your record. An
+                administrator reviews it first.
+            </p>
+        </header>
+
+        <form method="POST" novalidate>
+            {% csrf_token %}
+            {% include "partials/_form.html" %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Send request</button>
+                <a class="btn btn-ghost" href="{% url 'my_profile' %}">Back to profile</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>Requests I sent</h2>
+        </header>
+        {% if requests %}
+        <ul class="record-list">
+            {% for correction in requests %}
+            <li>
+                <span class="record-text">
+                    <span class="record-title">
+                        {{ correction.get_field_name_display }}:
+                        {{ correction.current_value|default:"empty" }} &rarr; {{ correction.requested_value }}
+                    </span>
+                    <span class="record-meta">
+                        {{ correction.created_at|date:"j M Y" }} &middot;
+                        {% if correction.status == 'pending' %}
+                        <span class="badge badge-warning">Pending</span>
+                        {% elif correction.status == 'approved' %}
+                        <span class="badge badge-success">Approved</span>
+                        {% else %}
+                        <span class="badge badge-muted">Rejected</span>
+                        {% endif %}
+                    </span>
+                    {% if correction.admin_note %}
+                    <span class="record-meta">Note: {{ correction.admin_note }}</span>
+                    {% endif %}
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-state">No requests yet.</p>
+        {% endif %}
+    </section>
+
+</div>
+
+{% endblock %}
