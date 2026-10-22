@@ -83,12 +83,13 @@ College Portal/
 ├── README.md
 ├── db.sqlite3                     # SQLite database (not in git)
 ├── media/                         # uploaded student photos (not in git)
-├── student_portal/                # Django project package
+├── college_portal/                # Django project package
 │   ├── settings.py                # development settings (environment driven)
 │   ├── settings_production.py     # production settings (secure by default)
 │   ├── test_runner.py             # runs the tests against a temporary MEDIA_ROOT
-│   └── urls.py                    # root URL conf
-└── app1/                          # the portal application
+│   ├── urls.py                    # root URL conf
+│   ├── wsgi.py / asgi.py
+└── college/                       # the portal application (app label: college)
     ├── models.py                  # Department, Students, FacultyProfile, ...
     ├── forms.py                   # all forms (student, department, faculty, ...)
     ├── permissions.py             # role helpers and view decorators
@@ -103,13 +104,26 @@ College Portal/
     │   ├── accounts.py            # student login accounts
     │   └── portal.py              # student self service
     ├── templates/                 # all HTML templates
-    ├── static/app1/
+    ├── static/college/
     │   ├── css/app.css
     │   └── js/app.js
     ├── management/commands/       # create_admin, create_faculty, setup_roles
     ├── migrations/                # 0001 ... 0008
     └── tests/                     # the test suite
 ```
+
+### Naming
+
+| Name | Meaning |
+|------|---------|
+| `college/` | the Django application that holds the portal (app label `college`) |
+| `college_portal/` | the Django project package (settings, root URL conf, WSGI/ASGI) |
+| `college.models`, `college.views`, … | the import paths of the application |
+| `Students` | the database table of the student records (kept from the original project) |
+
+The application used to be called `app1` and the project package
+`student_portal`; both were renamed when the project grew into a full college
+portal.
 
 ---
 
@@ -134,7 +148,7 @@ field or from a URL, so a visitor cannot promote themselves.
 
 How the rules are enforced:
 
-* `app1/permissions.py` holds `role_required`, `admin_required`,
+* `college/permissions.py` holds `role_required`, `admin_required`,
   `faculty_required`, `student_required` and `active_login_required`. The
   views use them, so the same rule applies no matter which URL is used.
 * The **Student** group deliberately has *no* model permissions. A student
@@ -145,7 +159,7 @@ How the rules are enforced:
   `change_department` and `view_facultyprofile`. Which *fields* faculty may
   change is enforced by `DepartmentFacultyEditForm` plus the object level
   check `faculty_can_edit_department()`.
-* The **Admin** group gets every `app1` permission but **no** `auth.User` /
+* The **Admin** group gets every `college` permission but **no** `auth.User` /
   `auth.Group` permission, so an admin cannot escalate to superuser through
   the portal.
 * `Students.department` uses `on_delete=PROTECT`. A department that still has
@@ -187,10 +201,42 @@ migrations replace it with a real foreign key **without losing data**:
    groups.
 
 The behaviour of this migration is covered by
-`app1/tests/test_models.py::BranchToDepartmentMigrationTests`.
+`college/tests/test_models.py::BranchToDepartmentMigrationTests`.
 
 A backup of the database and the media folder is created before such a change
 - see the `backups/` folder (not in git).
+
+### Upgrading a database that still uses the old `app1` name
+
+The application was renamed from `app1` to `college`. Django derives the
+migration history, the table names and the content types from the app label,
+so an **existing** database has to be adjusted once. A fresh installation
+needs nothing.
+
+```bash
+# 1. back up first
+mkdir -p backups/manual && cp db.sqlite3 backups/manual/
+
+# 2. tell Django that the migrations under the new label are already applied
+#    and rename the tables (the "Students" table keeps its own name)
+python - <<'PY'
+import sqlite3
+con = sqlite3.connect("db.sqlite3")
+con.execute("UPDATE django_migrations SET app = 'college' WHERE app = 'app1'")
+for old in ("app1_department", "app1_facultyprofile",
+            "app1_departmentchangelog", "app1_correctionrequest",
+            "app1_facultyprofile_departments"):
+    new = old.replace("app1_", "college_", 1)
+    con.execute(f"ALTER TABLE {old} RENAME TO {new}")
+con.commit()
+con.close()
+PY
+
+# 3. create the new content types / permissions and drop the old ones
+python manage.py migrate
+python manage.py remove_stale_contenttypes --include-stale-apps --noinput
+python manage.py setup_roles
+```
 
 ---
 
@@ -285,7 +331,7 @@ accepted and the size limit is enforced before the file is stored.
 
 ```bash
 python manage.py test              # the whole suite
-python manage.py test app1.tests.test_auth
+python manage.py test college.tests.test_auth
 python manage.py test -v 2         # verbose
 ```
 
@@ -295,7 +341,7 @@ faculty management, the login accounts, the student self service, the
 management commands, the models and the data migration.
 
 While the tests run, `MEDIA_ROOT` points at a temporary folder
-(`student_portal/test_runner.py`), so a test run never writes into the real
+(`college_portal/test_runner.py`), so a test run never writes into the real
 `media/` directory.
 
 ---
@@ -308,7 +354,7 @@ While the tests run, `MEDIA_ROOT` points at a temporary folder
 3. Use the production settings:
 
    ```bash
-   export DJANGO_SETTINGS_MODULE=student_portal.settings_production
+   export DJANGO_SETTINGS_MODULE=college_portal.settings_production
    python manage.py migrate
    python manage.py collectstatic
    python manage.py runserver 0.0.0.0:8000     # behind nginx/Apache in production
@@ -316,11 +362,11 @@ While the tests run, `MEDIA_ROOT` points at a temporary folder
 
 4. Serve `/media/` and `/static/` from the web server.
 
-`student_portal/settings_production.py` turns on the secure cookies, the HSTS
+`college_portal/settings_production.py` turns on the secure cookies, the HSTS
 header, the SSL redirect and the strict host header. Check it with:
 
 ```bash
-DJANGO_SETTINGS_MODULE=student_portal.settings_production python manage.py check --deploy
+DJANGO_SETTINGS_MODULE=college_portal.settings_production python manage.py check --deploy
 ```
 
 ---

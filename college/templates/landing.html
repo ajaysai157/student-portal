@@ -1,0 +1,111 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="College Management Portal - manage students, departments and faculty accounts.">
+    <title>College Management Portal</title>
+    <link rel="stylesheet" href="{% static 'college/css/app.css' %}">
+</head>
+
+<body class="landing-body">
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <header class="landing-header">
+        <div class="landing-header-inner">
+            <span class="brand-mark" aria-hidden="true">CP</span>
+            <span class="brand-text">
+                <strong>College Portal</strong>
+                <small>Management System</small>
+            </span>
+            <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Sign in</a>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <section class="hero">
+            <div class="hero-copy">
+                <p class="hero-eyebrow">Academic records, one portal</p>
+                <h1>Run your college records without spreadsheets.</h1>
+                <p class="hero-text">
+                    The College Management Portal keeps student records, departments and
+                    faculty accounts in one place - with three clearly separated
+                    experiences for administrators, faculty members and students.
+                </p>
+                <div class="hero-actions">
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-lg">Sign in to the portal</a>
+                    <a href="#roles" class="btn btn-outline btn-lg">See the roles</a>
+                </div>
+            </div>
+
+            <div class="hero-panel" aria-hidden="true">
+                <div class="hero-panel-card">
+                    <p class="hero-panel-label">Students</p>
+                    <p class="hero-panel-value">Searchable directory</p>
+                    <p class="hero-panel-note">Name, ID, department and section filters with pagination.</p>
+                </div>
+                <div class="hero-panel-card">
+                    <p class="hero-panel-label">Departments</p>
+                    <p class="hero-panel-value">Linked to faculty</p>
+                    <p class="hero-panel-note">Every edit is recorded in a small audit trail.</p>
+                </div>
+                <div class="hero-panel-card">
+                    <p class="hero-panel-label">Accounts</p>
+                    <p class="hero-panel-value">Role based access</p>
+                    <p class="hero-panel-note">Administrators, faculty and students each see their own work.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="roles" id="roles">
+            <h2>One portal, three roles</h2>
+            <p class="roles-intro">
+                Access is decided by the account that signs in - never by something a
+                visitor can type into a form.
+            </p>
+
+            <div class="role-grid">
+                <article class="role-card">
+                    <h3>Administrator</h3>
+                    <p>Full control over the college records.</p>
+                    <ul>
+                        <li>Register, edit and delete student records</li>
+                        <li>Create departments and assign faculty to them</li>
+                        <li>Create faculty and student login accounts</li>
+                        <li>Review correction requests from students</li>
+                    </ul>
+                </article>
+
+                <article class="role-card">
+                    <h3>Faculty member</h3>
+                    <p>College wide visibility, read only student data.</p>
+                    <ul>
+                        <li>Browse every student with search and filters</li>
+                        <li>Read student profiles and photographs</li>
+                        <li>Update the description, office and email of their own departments</li>
+                    </ul>
+                </article>
+
+                <article class="role-card">
+                    <h3>Student</h3>
+                    <p>A small self service area for their own record.</p>
+                    <ul>
+                        <li>See their own ID, department, section and photo</li>
+                        <li>Read the public details of their department</li>
+                        <li>Request a correction without changing the record directly</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="landing-footer">
+        <p>College Management Portal &middot; Python &middot; Django &middot; SQLite</p>
+    </footer>
+
+    <script src="{% static 'college/js/app.js' %}"></script>
+</body>
+
+</html>
