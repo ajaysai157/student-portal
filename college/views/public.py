@@ -10,12 +10,14 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
-from ..forms import LoginForm
+from ..forms import FacultySelfServiceForm, LoginForm, ProfilePhotoForm
+from ..models import UserProfile
 from ..permissions import (
     ROLE_ADMIN,
     ROLE_FACULTY,
     ROLE_STUDENT,
     active_login_required,
+    faculty_profile_for,
     role_of,
 )
 
@@ -88,7 +90,12 @@ class PortalPasswordChangeDoneView(PasswordChangeDoneView):
 
 @active_login_required
 def account_overview(request):
-    """Small page listing what the signed in user is allowed to do."""
+    """Small page listing what the signed in user is allowed to do.
+
+    It is also the place where a member of staff uploads their own photo:
+    a faculty member edits their faculty profile, everybody else gets a
+    ``UserProfile`` row.
+    """
     role = role_of(request.user)
     context = {
         "role": role,
@@ -98,4 +105,34 @@ def account_overview(request):
             ROLE_STUDENT: "Student",
         }.get(role, "User"),
     }
+
+    profile = faculty_profile_for(request.user)
+    if profile is not None:
+        # A faculty member keeps their picture in the faculty profile.
+        form = FacultySelfServiceForm(
+            request.POST or None, request.FILES or None, instance=profile
+        )
+    elif role == ROLE_STUDENT:
+        # The picture of a student is maintained by the administration.
+        form = None
+    else:
+        instance = (
+            UserProfile.objects.filter(user=request.user).first()
+            or UserProfile(user=request.user)
+        )
+        form = ProfilePhotoForm(
+            request.POST or None,
+            request.FILES or None,
+            instance=instance,
+            user=request.user,
+        )
+
+    context["profile_form"] = form
+
+    if request.method == "POST" and form is not None:
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile has been updated.")
+            return redirect("account_overview")
+
     return render(request, "account_overview.html", context)

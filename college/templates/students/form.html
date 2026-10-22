@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load college_tags %}
 
 {% block title %}{% if mode == 'create' %}Register student{% else %}Update student{% endif %} &middot; College Portal{% endblock %}
 {% block page_title %}{% if mode == 'create' %}Register a student{% else %}Update {{ student.student_name }}{% endif %}{% endblock %}
@@ -19,10 +20,18 @@
         {% csrf_token %}
         {% include "partials/_form.html" %}
 
-        {% if mode == 'edit' and student.photo_url %}
+        {% if mode == 'edit' %}
         <div class="current-photo">
-            <p class="field-label">Current photo</p>
-            <img src="{{ student.photo_url }}" alt="Current photo of {{ student.student_name }}">
+            <p class="field-label">Current picture</p>
+            {% student_avatar student as current_avatar %}
+            <img src="{{ current_avatar }}" alt="Current picture of {{ student.student_name }}">
+            {% if student.photo_url %}
+            <p class="help-text">The uploaded photo is shown. Without a photo the
+                default avatar of the gender is used.</p>
+            {% else %}
+            <p class="help-text">No photo uploaded - the default avatar of the
+                gender is used.</p>
+            {% endif %}
         </div>
         {% endif %}
 

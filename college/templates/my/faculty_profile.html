@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load college_tags %}
+
+{% block title %}My faculty profile &middot; College Portal{% endblock %}
+{% block page_title %}My faculty profile{% endblock %}
+{% block eyebrow %}Faculty portal{% endblock %}
+{% block nav_profile %}is-active{% endblock %}
+
+{% block content %}
+
+<div class="profile-hero">
+    {% user_avatar user as faculty_avatar %}
+    <span class="avatar avatar-large" aria-hidden="true">
+        <img src="{{ faculty_avatar }}" alt="">
+    </span>
+    <div class="profile-hero-text">
+        <h2>{{ profile.display_name }}</h2>
+        <p class="profile-hero-meta">
+            {{ profile.designation|default:"Faculty member" }} &middot; {{ profile.employee_id }}
+        </p>
+        <div class="profile-hero-actions">
+            <a class="btn btn-ghost btn-sm" href="{% url 'account_overview' %}">Account settings</a>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-columns">
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>My details</h2>
+        </header>
+        <dl class="detail-list">
+            <div class="detail-row">
+                <dt>Employee ID</dt>
+                <dd>{{ profile.employee_id }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Designation</dt>
+                <dd>{{ profile.designation|default:"Not provided" }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Phone</dt>
+                <dd>{{ profile.phone|default:"Not provided" }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Email</dt>
+                <dd>{{ user.email|default:"Not provided" }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Departments</dt>
+                <dd>
+                    {% for department in profile.departments.all %}
+                    <span class="tag">{{ department.code }}</span>
+                    {% empty %}
+                    <span class="tag tag-muted">Not assigned</span>
+                    {% endfor %}
+                </dd>
+            </div>
+        </dl>
+        <p class="panel-footnote">
+            The employee id, the departments and the role of your account are
+            maintained by the administration.
+        </p>
+    </section>
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>Update my profile</h2>
+            <p class="panel-intro">
+                Upload a photo of yourself and keep your contact details up to date.
+                Without a photo the portal shows the default faculty avatar.
+            </p>
+        </header>
+
+        <form method="POST" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {% include "partials/_form.html" with form_fields='single' %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save changes</button>
+            </div>
+        </form>
+    </section>
+
+</div>
+
+{% endblock %}

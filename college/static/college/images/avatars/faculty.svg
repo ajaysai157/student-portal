@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Default faculty avatar">
+    <rect width="128" height="128" rx="64" fill="#e2f0ec"/>
+    <path d="M30 44h68l-4 8H34z" fill="#b8860b"/>
+    <circle cx="64" cy="60" r="19" fill="#1f5c4d"/>
+    <path d="M64 84c-19 0-34 12-34 28v16h68v-16c0-16-15-28-34-28z" fill="#1f5c4d"/>
+    <path d="M64 84c-19 0-34 12-34 28v16h68v-16c0-16-15-28-34-28z" fill="#2f7d69" opacity=".35"/>
+</svg>

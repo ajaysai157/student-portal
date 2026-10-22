@@ -44,7 +44,23 @@ class Department(models.Model):
         verbose_name_plural = "Departments"
 
     def __str__(self):
-        return f"{self.code} - {self.name}"
+        # The code and the name are sometimes the same (a department created
+        # from a branch value), so the code is only added when it adds
+        # information - otherwise the label would read "AIML - AIML".
+        code = (self.code or "").strip()
+        name = (self.name or "").strip()
+        if not code:
+            return name
+        if not name:
+            return code
+        if code.upper() == name.upper():
+            return name
+        return f"{code} - {name}"
+
+    @property
+    def display_name(self):
+        """The department name without the code."""
+        return (self.name or self.code or "").strip()
 
     @property
     def student_count(self):
@@ -64,6 +80,13 @@ class Students(models.Model):
         (3, "Section 3"),
     ]
 
+    GENDER_CHOICES = [
+        ("male", "Male"),
+        ("female", "Female"),
+        ("other", "Other"),
+        ("unspecified", "Not specified"),
+    ]
+
     student_name = models.CharField(max_length=30)
     student_id = models.CharField(max_length=15, unique=True)
     department = models.ForeignKey(
@@ -73,6 +96,12 @@ class Students(models.Model):
         help_text="The department this student is enrolled in.",
     )
     student_section = models.IntegerField(choices=SECTION_CHOICES)
+    gender = models.CharField(
+        max_length=12,
+        choices=GENDER_CHOICES,
+        default="unspecified",
+        help_text="Used to pick the default avatar when no photo is uploaded.",
+    )
     student_image = models.ImageField(upload_to="student_images/", blank=True, null=True)
     account = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -108,6 +137,10 @@ class Students(models.Model):
                 return None
         return None
 
+    @property
+    def gender_display(self):
+        return dict(self.GENDER_CHOICES).get(self.gender, "Not specified")
+
 
 class FacultyProfile(models.Model):
     """Faculty specific information attached to a Django user account."""
@@ -120,6 +153,12 @@ class FacultyProfile(models.Model):
     employee_id = models.CharField(max_length=20, unique=True)
     designation = models.CharField(max_length=60, blank=True)
     phone = models.CharField(max_length=20, blank=True)
+    photo = models.ImageField(
+        upload_to="faculty_photos/",
+        blank=True,
+        null=True,
+        help_text="Photo shown in the portal. A default avatar is used when empty.",
+    )
     departments = models.ManyToManyField(
         Department,
         related_name="faculty_members",
@@ -138,6 +177,54 @@ class FacultyProfile(models.Model):
     @property
     def display_name(self):
         return self.user.get_full_name() or self.user.username
+
+    @property
+    def photo_url(self):
+        """URL of the uploaded photo, or ``None`` when no photo is on file."""
+        if self.photo:
+            try:
+                return self.photo.url
+            except ValueError:  # pragma: no cover - file missing on disk
+                return None
+        return None
+
+
+class UserProfile(models.Model):
+    """Extra portal data of a user account without a faculty profile.
+
+    Administrators (and any other user without a ``FacultyProfile``) can
+    upload a photo here.  When no photo is uploaded the portal shows the
+    default avatar of the role.
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="portal_profile",
+    )
+    photo = models.ImageField(
+        upload_to="profile_photos/",
+        blank=True,
+        null=True,
+        help_text="Photo shown in the portal. A default avatar is used when empty.",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "User profile"
+        verbose_name_plural = "User profiles"
+
+    def __str__(self):
+        return f"Profile of {self.user.get_username()}"
+
+    @property
+    def photo_url(self):
+        if self.photo:
+            try:
+                return self.photo.url
+            except ValueError:  # pragma: no cover - file missing on disk
+                return None
+        return None
 
 
 class DepartmentChangeLog(models.Model):

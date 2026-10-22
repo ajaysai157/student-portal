@@ -20,9 +20,9 @@ from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 
-from .models import CorrectionRequest, Department, FacultyProfile, Students
+from .models import CorrectionRequest, Department, FacultyProfile, Students, UserProfile
 
-#: Maximum size of an uploaded student photo (2 MB by default).
+#: Maximum size of an uploaded photo (2 MB by default).
 MAX_IMAGE_SIZE = 2 * 1024 * 1024
 ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
@@ -89,6 +89,11 @@ class StudentImageField(forms.ImageField):
         return cleaned
 
 
+#: The photo fields of the faculty and of the user profiles use the same
+#: rules as the student photo.
+PortalImageField = StudentImageField
+
+
 class StudentRegisterForm(forms.ModelForm):
     """Admin form used to register a new student."""
 
@@ -101,6 +106,7 @@ class StudentRegisterForm(forms.ModelForm):
             "student_id",
             "department",
             "student_section",
+            "gender",
             "student_image",
         ]
         widgets = {
@@ -110,6 +116,7 @@ class StudentRegisterForm(forms.ModelForm):
             ),
             "department": forms.Select(attrs={"class": SELECT_CLASS}),
             "student_section": forms.Select(attrs={"class": SELECT_CLASS}),
+            "gender": forms.Select(attrs={"class": SELECT_CLASS}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -120,6 +127,13 @@ class StudentRegisterForm(forms.ModelForm):
             {"class": TEXT_CLASS, "accept": "image/*"}
         )
         self.fields["student_name"].label = "Full name"
+        self.fields["gender"].required = False
+        self.fields["gender"].help_text = (
+            "Used to pick the default avatar of the student."
+        )
+
+    def clean_gender(self):
+        return self.cleaned_data.get("gender") or "unspecified"
 
     def clean_student_id(self):
         value = self.cleaned_data["student_id"].strip().upper()
@@ -148,6 +162,7 @@ class StudentUpdateForm(forms.ModelForm):
             "student_id",
             "department",
             "student_section",
+            "gender",
             "student_image",
         ]
         widgets = {
@@ -155,6 +170,7 @@ class StudentUpdateForm(forms.ModelForm):
             "student_id": forms.TextInput(attrs={"class": TEXT_CLASS}),
             "department": forms.Select(attrs={"class": SELECT_CLASS}),
             "student_section": forms.Select(attrs={"class": SELECT_CLASS}),
+            "gender": forms.Select(attrs={"class": SELECT_CLASS}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -167,6 +183,13 @@ class StudentUpdateForm(forms.ModelForm):
             "Leave empty to keep the current photo. Uploading a new file "
             "replaces it."
         )
+        self.fields["gender"].required = False
+        self.fields["gender"].help_text = (
+            "Used to pick the default avatar of the student."
+        )
+
+    def clean_gender(self):
+        return self.cleaned_data.get("gender") or "unspecified"
 
     def clean_student_id(self):
         value = self.cleaned_data["student_id"].strip().upper()
@@ -276,6 +299,11 @@ class FacultyCreateForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={"class": TEXT_CLASS}),
     )
+    photo = PortalImageField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={"class": TEXT_CLASS, "accept": "image/*"}),
+        help_text="A default avatar is used when no photo is uploaded.",
+    )
     departments = forms.ModelMultipleChoiceField(
         queryset=Department.objects.none(),
         widget=forms.CheckboxSelectMultiple,
@@ -296,6 +324,9 @@ class FacultyCreateForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["departments"].queryset = Department.objects.filter(is_active=True)
+        self.fields["photo"].widget.attrs.update(
+            {"class": TEXT_CLASS, "accept": "image/*"}
+        )
 
     def clean_username(self):
         username = self.cleaned_data["username"].strip()
@@ -338,6 +369,7 @@ class FacultyCreateForm(forms.Form):
             employee_id=self.cleaned_data["employee_id"],
             designation=self.cleaned_data.get("designation", "").strip(),
             phone=self.cleaned_data.get("phone", "").strip(),
+            photo=self.cleaned_data.get("photo") or None,
         )
         profile.departments.set(self.cleaned_data.get("departments") or [])
         faculty_group, _ = Group.objects.get_or_create(name="Faculty")
@@ -372,10 +404,15 @@ class FacultyUpdateForm(forms.ModelForm):
         ),
         help_text="Leave empty to keep the current password.",
     )
+    photo = PortalImageField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={"class": TEXT_CLASS, "accept": "image/*"}),
+        help_text="Leave empty to keep the current photo. A default avatar is used when no photo is on file.",
+    )
 
     class Meta:
         model = FacultyProfile
-        fields = ["employee_id", "designation", "phone"]
+        fields = ["employee_id", "designation", "phone", "photo"]
         widgets = {
             "employee_id": forms.TextInput(attrs={"class": TEXT_CLASS}),
             "designation": forms.TextInput(attrs={"class": TEXT_CLASS}),
@@ -385,6 +422,9 @@ class FacultyUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["departments"].queryset = Department.objects.filter(is_active=True)
+        self.fields["photo"].widget.attrs.update(
+            {"class": TEXT_CLASS, "accept": "image/*"}
+        )
         if self.instance and self.instance.pk:
             self.fields["departments"].initial = self.instance.departments.all()
             user = self.instance.user
@@ -414,6 +454,94 @@ class FacultyUpdateForm(forms.ModelForm):
         if new_password:
             user.set_password(new_password)
         user.save()
+        return profile
+
+
+class FacultySelfServiceForm(forms.ModelForm):
+    """Lets a faculty member maintain their own profile and photo.
+
+    Only the fields a faculty member owns are on this form - the employee
+    id, the departments and the role of the account are administrative and
+    stay out of it.
+    """
+
+    email = forms.EmailField(
+        required=False, widget=forms.EmailInput(attrs={"class": TEXT_CLASS})
+    )
+
+    class Meta:
+        model = FacultyProfile
+        fields = ["designation", "phone", "photo"]
+        widgets = {
+            "designation": forms.TextInput(attrs={"class": TEXT_CLASS}),
+            "phone": forms.TextInput(attrs={"class": TEXT_CLASS}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["photo"].widget.attrs.update(
+            {"class": TEXT_CLASS, "accept": "image/*"}
+        )
+        self.fields["photo"].help_text = (
+            "Leave empty to keep the current photo. A default avatar is used "
+            "when no photo is on file."
+        )
+        if self.instance and self.instance.pk:
+            self.fields["email"].initial = self.instance.user.email
+
+    def save(self, commit=True):
+        profile = super().save(commit=commit)
+        email = self.cleaned_data.get("email", "").strip()
+        if commit and email:
+            profile.user.email = email
+            profile.user.save(update_fields=["email"])
+        return profile
+
+
+class ProfilePhotoForm(forms.ModelForm):
+    """Lets an administrator upload their own photo.
+
+    Administrators (and any other user without a faculty profile) keep
+    their picture in a ``UserProfile`` row.  When no photo is uploaded the
+    portal shows the default avatar of the role.
+    """
+
+    first_name = forms.CharField(
+        max_length=150, required=False, widget=forms.TextInput(attrs={"class": TEXT_CLASS})
+    )
+    last_name = forms.CharField(
+        max_length=150, required=False, widget=forms.TextInput(attrs={"class": TEXT_CLASS})
+    )
+
+    class Meta:
+        model = UserProfile
+        fields = ["photo"]
+        widgets = {
+            "photo": forms.ClearableFileInput(
+                attrs={"class": TEXT_CLASS, "accept": "image/*"}
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+        self.fields["photo"].widget.attrs.update(
+            {"class": TEXT_CLASS, "accept": "image/*"}
+        )
+        self.fields["photo"].help_text = (
+            "JPG, PNG, GIF or WEBP, up to 2 MB. A default avatar is used when "
+            "no photo is uploaded."
+        )
+        if self.user is not None:
+            self.fields["first_name"].initial = self.user.first_name
+            self.fields["last_name"].initial = self.user.last_name
+
+    def save(self, commit=True):
+        profile = super().save(commit=commit)
+        if self.user is not None and commit:
+            self.user.first_name = self.cleaned_data.get("first_name", "").strip()
+            self.user.last_name = self.cleaned_data.get("last_name", "").strip()
+            self.user.save(update_fields=["first_name", "last_name"])
         return profile
 
 

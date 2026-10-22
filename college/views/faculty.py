@@ -47,7 +47,7 @@ def faculty_detail(request, pk):
 def faculty_create(request):
     """Admin: create a faculty account and assign departments."""
     if request.method == "POST":
-        form = FacultyCreateForm(request.POST)
+        form = FacultyCreateForm(request.POST, request.FILES)
         if form.is_valid():
             profile = form.save()
             messages.success(
@@ -67,7 +67,7 @@ def faculty_update(request, pk):
     profile = get_object_or_404(FacultyProfile, pk=pk)
 
     if request.method == "POST":
-        form = FacultyUpdateForm(request.POST, instance=profile)
+        form = FacultyUpdateForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
             messages.success(

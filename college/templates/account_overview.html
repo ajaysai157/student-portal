@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load college_tags %}
 
 {% block title %}Your account &middot; College Portal{% endblock %}
 {% block page_title %}Your account{% endblock %}
@@ -6,43 +7,90 @@
 
 {% block content %}
 
-<section class="panel">
-    <header class="panel-head">
-        <h2>{{ user.get_full_name|default:user.get_username }}</h2>
-        <p class="panel-intro">{{ role_label }} account &middot; {{ user.get_username }}</p>
-    </header>
+<div class="dashboard-columns">
 
-    <dl class="detail-list">
-        <div class="detail-row">
-            <dt>Role</dt>
-            <dd>{{ role_label }}</dd>
+    <section class="panel">
+        <header class="panel-head">
+            <h2>{{ user.get_full_name|default:user.get_username }}</h2>
+            <p class="panel-intro">{{ role_label }} account &middot; {{ user.get_username }}</p>
+        </header>
+
+        <dl class="detail-list">
+            <div class="detail-row">
+                <dt>Role</dt>
+                <dd>{{ role_label }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Email</dt>
+                <dd>{{ user.email|default:"Not provided" }}</dd>
+            </div>
+            <div class="detail-row">
+                <dt>Status</dt>
+                <dd>
+                    {% if user.is_active %}
+                    <span class="badge badge-success">Active</span>
+                    {% else %}
+                    <span class="badge badge-muted">Deactivated</span>
+                    {% endif %}
+                </dd>
+            </div>
+        </dl>
+
+        <div class="quick-actions">
+            <a class="quick-action" href="{% url 'password_change' %}">
+                <span class="quick-action-title">Change password</span>
+                <span class="quick-action-text">Update the password of this account.</span>
+            </a>
+            {% if role == 'faculty' %}
+            <a class="quick-action" href="{% url 'my_faculty_profile' %}">
+                <span class="quick-action-title">Faculty profile</span>
+                <span class="quick-action-text">Edit your departments, designation and phone number.</span>
+            </a>
+            {% endif %}
+            <a class="quick-action" href="{% url 'dashboard' %}">
+                <span class="quick-action-title">Back to dashboard</span>
+                <span class="quick-action-text">Return to the start page of your role.</span>
+            </a>
         </div>
-        <div class="detail-row">
-            <dt>Email</dt>
-            <dd>{{ user.email|default:"Not provided" }}</dd>
-        </div>
-        <div class="detail-row">
-            <dt>Status</dt>
-            <dd>
-                {% if user.is_active %}
-                <span class="badge badge-success">Active</span>
+    </section>
+
+    <section class="panel">
+        <header class="panel-head">
+            <h2>Your picture</h2>
+            <p class="panel-intro">
+                {% if role == 'student' %}
+                The picture of a student is maintained by the administration.
                 {% else %}
-                <span class="badge badge-muted">Deactivated</span>
+                Upload a photo of yourself - until then the portal shows the
+                default avatar of your role.
                 {% endif %}
-            </dd>
-        </div>
-    </dl>
+            </p>
+        </header>
 
-    <div class="quick-actions">
-        <a class="quick-action" href="{% url 'password_change' %}">
-            <span class="quick-action-title">Change password</span>
-            <span class="quick-action-text">Update the password of this account.</span>
-        </a>
-        <a class="quick-action" href="{% url 'dashboard' %}">
-            <span class="quick-action-title">Back to dashboard</span>
-            <span class="quick-action-text">Return to the start page of your role.</span>
-        </a>
-    </div>
-</section>
+        {% if role == 'student' %}
+        <div class="profile-hero">
+            {% user_avatar user as account_avatar %}
+            <span class="avatar avatar-large" aria-hidden="true">
+                <img src="{{ account_avatar }}" alt="">
+            </span>
+        </div>
+        {% else %}
+        <div class="profile-hero">
+            {% user_avatar user as account_avatar %}
+            <span class="avatar avatar-large" aria-hidden="true">
+                <img src="{{ account_avatar }}" alt="">
+            </span>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="account-photo-form" novalidate>
+            {% csrf_token %}
+            {% include "partials/_form.html" with form=profile_form form_fields='single' %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save picture</button>
+            </div>
+        </form>
+        {% endif %}    </section>
+
+</div>
 
 {% endblock %}

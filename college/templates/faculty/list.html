@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load college_tags %}
 
 {% block title %}Faculty &middot; College Portal{% endblock %}
 {% block page_title %}Faculty members{% endblock %}
@@ -17,7 +18,10 @@
 <ul class="card-list">
     {% for profile in faculty_members %}
     <li class="card-row">
-        <span class="avatar avatar-placeholder" role="img" aria-hidden="true">{{ profile.display_name|slice:":1"|upper }}</span>
+        {% user_avatar profile.user as faculty_avatar %}
+        <span class="person-avatar" aria-hidden="true">
+            <img src="{{ faculty_avatar }}" alt="">
+        </span>
         <div class="card-row-text">
             <p class="card-row-title">
                 <a href="{% url 'faculty_detail' profile.pk %}">{{ profile.display_name }}</a>

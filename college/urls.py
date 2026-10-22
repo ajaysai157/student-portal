@@ -137,4 +137,9 @@ urlpatterns = [
         name="my_correction_requests",
     ),
     path("my/department/", views.my_department, name="my_department"),
+    path(
+        "my/faculty-profile/",
+        views.my_faculty_profile,
+        name="my_faculty_profile",
+    ),
 ]

@@ -12,9 +12,15 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from ..forms import CorrectionRequestForm
+from ..forms import CorrectionRequestForm, FacultySelfServiceForm
 from ..models import CorrectionRequest, Department
-from ..permissions import active_login_required, admin_required, student_record_for
+from ..permissions import (
+    active_login_required,
+    admin_required,
+    faculty_profile_for,
+    faculty_required,
+    student_record_for,
+)
 
 
 def current_value(student, field_name):
@@ -85,6 +91,35 @@ def my_department(request):
     if not department:
         return render(request, "my/no_profile.html", {"student": student})
     return render(request, "my/department.html", {"department": department})
+
+
+@faculty_required
+def my_faculty_profile(request):
+    """The faculty member's own profile page.
+
+    A faculty member may maintain their photo, designation, phone number
+    and email address here.  The employee id, the departments and the role
+    of the account are administrative fields and are not on this page.
+    """
+    profile = faculty_profile_for(request.user)
+    if profile is None:
+        messages.error(request, "Your account is not linked to a faculty profile.")
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        form = FacultySelfServiceForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile has been updated.")
+            return redirect("my_faculty_profile")
+    else:
+        form = FacultySelfServiceForm(instance=profile)
+
+    return render(
+        request,
+        "my/faculty_profile.html",
+        {"profile": profile, "form": form},
+    )
 
 
 @active_login_required

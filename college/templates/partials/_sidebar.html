@@ -56,16 +56,35 @@ a convenience and never the security control.
         </a>
         {% endif %}
 
+        {% if is_faculty %}
+        <p class="nav-section">My portal</p>
+        <a class="nav-link {% block nav_faculty_profile %}{% endblock %}" href="{% url 'my_faculty_profile' %}">
+            <span class="nav-icon" aria-hidden="true">☺</span> My faculty profile
+        </a>
+        {% endif %}
+
         <p class="nav-section">Account</p>
+        <a class="nav-link" href="{% url 'account_overview' %}">
+            <span class="nav-icon" aria-hidden="true">◍</span> My account
+        </a>
         <a class="nav-link" href="{% url 'password_change' %}">
             <span class="nav-icon" aria-hidden="true">⚿</span> Change password
         </a>
     </nav>
 
     <div class="sidebar-footer">
-        <p>Signed in as</p>
-        <p class="sidebar-role">
-            {% if is_admin %}Administrator{% elif is_faculty %}Faculty{% elif is_student %}Student{% else %}User{% endif %}
-        </p>
+        <div class="sidebar-user">
+            {% load college_tags %}
+            {% user_avatar user as sidebar_avatar %}
+            <span class="person-avatar" aria-hidden="true">
+                <img src="{{ sidebar_avatar }}" alt="">
+            </span>
+            <span class="sidebar-user-text">
+                <span class="sidebar-user-name">{{ user.get_full_name|default:user.get_username }}</span>
+                <span class="sidebar-role">
+                    {% if is_admin %}Administrator{% elif is_faculty %}Faculty{% elif is_student %}Student{% else %}User{% endif %}
+                </span>
+            </span>
+        </div>
     </div>
 </aside>

@@ -35,7 +35,11 @@
                 <div class="topbar-user">
                     {% if user.is_authenticated %}
                     <div class="user-chip">
-                        <span class="user-avatar" aria-hidden="true">{{ user.get_short_name|default:user.username|first|upper }}</span>
+                        {% load college_tags %}
+                        <span class="user-avatar" aria-hidden="true">
+                            {% user_avatar user as avatar_url %}
+                            <img src="{{ avatar_url }}" alt="">
+                        </span>
                         <span class="user-meta">
                             <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
                             <span class="user-role">{{ user.get_username }}</span>

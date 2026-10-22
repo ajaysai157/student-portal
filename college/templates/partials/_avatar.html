@@ -1,8 +1,11 @@
-{% comment %}Photo or the placeholder used when a student has no image.{% endcomment %}
+{% comment %}
+Photo of a student, or the default avatar of the gender when no photo was
+uploaded.  The tag lives in ``college/templatetags/college_tags.py``.
+{% endcomment %}
+{% load college_tags %}
+{% student_avatar student as avatar_url %}
 {% if student.photo_url %}
-<img class="avatar" src="{{ student.photo_url }}" alt="Photo of {{ student.student_name }}" loading="lazy">
+<img class="avatar" src="{{ avatar_url }}" alt="Photo of {{ student.student_name }}" loading="lazy">
 {% else %}
-<span class="avatar avatar-placeholder" role="img" aria-label="No photo available for {{ student.student_name }}">
-    {{ student.student_name|slice:":1"|upper }}
-</span>
+<img class="avatar" src="{{ avatar_url }}" alt="Default avatar of {{ student.student_name }}" loading="lazy">
 {% endif %}

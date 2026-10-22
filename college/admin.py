@@ -13,6 +13,7 @@ from .models import (
     DepartmentChangeLog,
     FacultyProfile,
     Students,
+    UserProfile,
 )
 
 
@@ -26,8 +27,15 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(Students)
 class StudentsAdmin(admin.ModelAdmin):
-    list_display = ("student_id", "student_name", "department", "student_section", "has_account")
-    list_filter = ("department", "student_section")
+    list_display = (
+        "student_id",
+        "student_name",
+        "department",
+        "student_section",
+        "gender",
+        "has_account",
+    )
+    list_filter = ("department", "student_section", "gender")
     search_fields = ("student_id", "student_name")
     autocomplete_fields = ("department",)
     ordering = ("student_name",)
@@ -43,6 +51,13 @@ class FacultyProfileAdmin(admin.ModelAdmin):
     search_fields = ("employee_id", "user__username", "user__first_name", "user__last_name")
     filter_horizontal = ("departments",)
     ordering = ("employee_id",)
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "updated_at")
+    search_fields = ("user__username", "user__first_name", "user__last_name")
+    ordering = ("user__username",)
 
 
 @admin.register(DepartmentChangeLog)

@@ -31,9 +31,11 @@ and **Student** - and it keeps the existing student rows and photos.
 **Admin**
 
 - Dashboard with counters (students, departments, faculty, pending corrections)
-- Full CRUD on student records, including a photo upload
+- Full CRUD on student records, including a photo upload and the gender that
+  picks the default avatar
 - Full CRUD on departments, with an audit trail of every change
 - Create and deactivate faculty accounts, assign them to departments
+- Upload their own photo and edit their display name on the account page
 - Create student login accounts and link/unlink them with a student record
 - Review, approve or reject student correction requests, optionally applying
   the change to the official record
@@ -45,6 +47,8 @@ and **Student** - and it keeps the existing student rows and photos.
 - Read-only access to the whole student directory (search, filter, paginate)
 - Edit a limited set of fields (`description`, `office_location`,
   `contact_email`) on the departments they are assigned to
+- Their own profile page (`/my/faculty-profile/`): photo, designation, phone
+  number and e-mail address
 
 **Student**
 
@@ -55,6 +59,8 @@ and **Student** - and it keeps the existing student rows and photos.
 **Shared**
 
 - Searchable and filterable student directory with pagination (12 per page)
+- An avatar for every person: the uploaded photo, or the default avatar of the
+  role - a student's default avatar follows their gender
 - Role aware navigation, mobile friendly layout, accessible forms
 - Progressively enhanced JavaScript (the portal works without it)
 
@@ -93,6 +99,7 @@ College Portal/
     ├── models.py                  # Department, Students, FacultyProfile, ...
     ├── forms.py                   # all forms (student, department, faculty, ...)
     ├── permissions.py             # role helpers and view decorators
+    ├── avatars.py                 # default avatars of every role
     ├── admin.py                   # Django admin registrations
     ├── views/                     # views split per topic
     │   ├── common.py              # shared helpers (search, filter, paginate)
@@ -102,13 +109,16 @@ College Portal/
     │   ├── departments.py         # departments + audit trail
     │   ├── faculty.py             # faculty management
     │   ├── accounts.py            # student login accounts
-    │   └── portal.py              # student self service
+    │   └── portal.py              # student and faculty self service
+    ├── templatetags/college_tags.py  # {% student_avatar %} / {% user_avatar %}
     ├── templates/                 # all HTML templates
     ├── static/college/
     │   ├── css/app.css
-    │   └── js/app.js
-    ├── management/commands/       # create_admin, create_faculty, setup_roles
-    ├── migrations/                # 0001 ... 0008
+    │   ├── js/app.js
+    │   └── images/avatars/        # the default avatars (SVG)
+    ├── management/commands/       # create_admin, create_faculty, setup_roles,
+    │                               # seed_branches
+    ├── migrations/                # 0001 ... 0009
     └── tests/                     # the test suite
 ```
 
@@ -174,13 +184,33 @@ How the rules are enforced:
 | Model | Purpose |
 |-------|---------|
 | `Department` | code, name, description, office location, contact email, active flag |
-| `Students` | name, id, department (FK), section, photo, linked login account |
-| `FacultyProfile` | employee id, designation, phone, departments (M2M) |
+| `Students` | name, id, department (FK), section, gender, photo, linked login account |
+| `FacultyProfile` | employee id, designation, phone, photo, departments (M2M) |
+| `UserProfile` | photo of a user account without a faculty profile (admins) |
 | `DepartmentChangeLog` | who changed a department, when and which fields moved |
 | `CorrectionRequest` | a student's request to fix their own record |
 
 The students table keeps its original name (`Students`) and its original
 primary key, so the existing rows keep working.
+
+### Avatars
+
+Every person in the portal has a picture:
+
+* the **uploaded photo** when there is one,
+* otherwise the **default avatar** of the role - a student gets the avatar of
+  their gender (`male`, `female`, `other` or the neutral one), a faculty member
+  gets the faculty avatar and an administrator gets the admin avatar.
+
+The defaults are small SVG files in `college/static/college/images/avatars/`.
+The logic lives in `college/avatars.py` and is used by the templates through
+the `{% student_avatar %}` and `{% user_avatar %}` template tags.
+
+| Who | Where the photo is stored | Who may change it |
+|------|--------------------------|-------------------|
+| Student | `Students.student_image` | the administration |
+| Faculty | `FacultyProfile.photo` | the faculty member, an administrator |
+| Administrator | `UserProfile.photo` | the administrator |
 
 ### Migration of the old data
 
@@ -199,6 +229,8 @@ migrations replace it with a real foreign key **without losing data**:
    column is dropped.
 4. `0008_seed_role_groups` - creates the `Admin`, `Faculty` and `Student`
    groups.
+5. `0009_portal_avatars` - adds `Students.gender`, `FacultyProfile.photo` and
+   the `UserProfile` table.
 
 The behaviour of this migration is covered by
 `college/tests/test_models.py::BranchToDepartmentMigrationTests`.
@@ -261,6 +293,10 @@ python manage.py migrate
 # 5. your first administrator (password is asked for interactively)
 python manage.py create_admin --username principal --email principal@college.edu
 
+# 5b. optional: create the standard branches (AIML, CSE, ECE, MECH, CIVIL)
+#     and spread the existing students over them
+python manage.py seed_branches
+
 # 6. run the server
 python manage.py runserver
 ```
@@ -280,6 +316,8 @@ Useful URLs:
 | `/manage/student-accounts/` | student login accounts (admin) |
 | `/manage/correction-requests/` | correction requests (admin) |
 | `/my/profile/` | own profile (student) |
+| `/my/faculty-profile/` | own profile and photo (faculty) |
+| `/accounts/overview/` | own account, picture and quick links |
 | `/django-admin/` | Django admin site (superuser) |
 
 ---
@@ -302,6 +340,13 @@ python manage.py create_faculty --username iyer --email iyer@college.edu \
 
 # Recreate the role groups and (re)assign their permissions.
 python manage.py setup_roles
+
+# Create the standard branches (AIML, CSE, ECE, MECH, CIVIL) and spread the
+# students of the old "branch" department over them. The command is
+# idempotent and never moves a student that was placed by hand.
+python manage.py seed_branches
+python manage.py seed_branches --no-students   # only create the branches
+python manage.py seed_branches --no-gender     # keep the gender of the students
 ```
 
 ---
@@ -338,7 +383,8 @@ python manage.py test -v 2         # verbose
 The suite covers authentication and session handling, the role helpers, the
 student records, the directory, the departments and their audit trail, the
 faculty management, the login accounts, the student self service, the
-management commands, the models and the data migration.
+management commands, the models, the data migration, the avatars and the photo
+uploads (229 tests).
 
 While the tests run, `MEDIA_ROOT` points at a temporary folder
 (`college_portal/test_runner.py`), so a test run never writes into the real

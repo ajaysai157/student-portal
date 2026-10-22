@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Default student avatar">
+    <rect width="128" height="128" rx="64" fill="#f3e3ee"/>
+    <path d="M64 26c-13 0-21 9-21 22 0 8 3 14 7 18-14 4-24 15-24 29v13h76V95c0-14-10-25-24-29 4-4 7-10 7-18 0-13-8-22-21-22z" fill="#7a3b62"/>
+    <path d="M64 78c-18 0-33 12-33 28v12h66v-12c0-16-15-28-33-28z" fill="#a25a80"/>
+</svg>

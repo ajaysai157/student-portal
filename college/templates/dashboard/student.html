@@ -13,7 +13,7 @@
     {% include "partials/_avatar.html" %}
     <div class="profile-hero-text">
         <h2>{{ student.student_name }}</h2>
-        <p class="profile-hero-meta">{{ student.student_id }} &middot; {{ student.department.name }} &middot;
+        <p class="profile-hero-meta">{{ student.student_id }} &middot; {{ student.department }} &middot;
             Section {{ student.student_section }}</p>
         <a class="btn btn-primary btn-sm" href="{% url 'my_profile' %}">Open my full profile</a>
     </div>
@@ -36,7 +36,7 @@
             </div>
             <div class="detail-row">
                 <dt>Department</dt>
-                <dd>{{ student.department.code }} &ndash; {{ student.department.name }}</dd>
+                <dd>{{ student.department }}</dd>
             </div>
             <div class="detail-row">
                 <dt>Section</dt>

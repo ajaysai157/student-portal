@@ -47,6 +47,7 @@ from .portal import (  # noqa: F401
     correction_request_review,
     my_correction_requests,
     my_department,
+    my_faculty_profile,
     my_profile,
 )
 from .public import (  # noqa: F401
